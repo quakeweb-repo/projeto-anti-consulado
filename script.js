@@ -1,15 +1,36 @@
 // ============================================================================
 // BACKGROUND CHECK PRO - Professional Verification System
-// Real-time data mining with Portal da Transparência integration
-// Netlify Backend Compatible
+// GitHub Pages Frontend → Netlify Backend Architecture
 // ============================================================================
 
-// API Base URL - Uses Netlify Functions when deployed
-var API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? '/.netlify/functions' 
-    : '/.netlify/functions';
+// Configuration for Netlify Backend
+var CONFIG = {
+    // Netlify site URL (update with your Netlify site name)
+    netlifyUrl: 'https://background-check-pro.netlify.app',
+    // GitHub Pages URL
+    githubPagesUrl: 'https://quakeweb-repo.github.io/projeto-anti-consulado',
+    // API Base URL - Always points to Netlify
+    apiBase: 'https://background-check-pro.netlify.app/.netlify/functions',
+    // Environment detection
+    isNetlify: window.location.hostname.includes('netlify.app'),
+    isGitHubPages: window.location.hostname.includes('github.io'),
+    isLocalhost: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+};
 
-// Services available from window scope (loaded via script tags)
+// Auto-detect correct API URL
+if (CONFIG.isLocalhost) {
+    CONFIG.apiBase = '/.netlify/functions';
+} else if (CONFIG.isNetlify) {
+    CONFIG.apiBase = '/.netlify/functions';
+} else {
+    // GitHub Pages - Always use Netlify API
+    CONFIG.apiBase = 'https://background-check-pro.netlify.app/.netlify/functions';
+}
+
+// Log environment info
+console.log('Background Check Pro - Environment Detection');
+console.log('Platform:', CONFIG.isNetlify ? 'Netlify' : (CONFIG.isGitHubPages ? 'GitHub Pages' : 'Localhost'));
+console.log('API Base:', CONFIG.apiBase);
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeBackgroundCheckPro();
@@ -146,7 +167,7 @@ async function searchByCPF(cpf) {
         }
         
         // Call Netlify Function for CPF search
-        var response = await fetch(API_BASE_URL + '/cpf?cpf=' + cleanCPF);
+        var response = await fetch(CONFIG.apiBase + '/cpf?cpf=' + cleanCPF);
         var data = await response.json();
         
         var results = {
@@ -330,7 +351,7 @@ async function searchInstagram(username) {
         var cleanUsername = username.replace('@', '');
         
         // Call Netlify Function for Instagram search
-        var response = await fetch(API_BASE_URL + '/instagram?username=' + cleanUsername);
+        var response = await fetch(CONFIG.apiBase + '/instagram?username=' + cleanUsername);
         var data = await response.json();
         
         var results = {
@@ -1489,7 +1510,7 @@ async function searchPhone(phone) {
         var cleanPhone = phone.replace(/[^\d]/g, '');
         
         // Call Netlify Function for phone search
-        var response = await fetch(API_BASE_URL + '/phone?phone=' + cleanPhone);
+        var response = await fetch(CONFIG.apiBase + '/phone?phone=' + cleanPhone);
         var data = await response.json();
         
         var results = {
@@ -1518,7 +1539,7 @@ async function searchEmail(email) {
         }
         
         // Call Netlify Function for email search
-        var response = await fetch(API_BASE_URL + '/email?email=' + encodeURIComponent(email));
+        var response = await fetch(CONFIG.apiBase + '/email?email=' + encodeURIComponent(email));
         var data = await response.json();
         
         var results = {
@@ -1701,7 +1722,7 @@ async function searchPersonWithCivilRegistry(name) {
         showLoadingState();
         
         // Call Netlify Function for person search
-        var response = await fetch(API_BASE_URL + '/person?name=' + encodeURIComponent(name));
+        var response = await fetch(CONFIG.apiBase + '/person?name=' + encodeURIComponent(name));
         var data = await response.json();
         
         var results = {
