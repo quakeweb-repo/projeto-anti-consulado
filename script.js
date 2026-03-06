@@ -220,77 +220,80 @@ async function searchPortalTransparencia(name) {
                 ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
             };
         } else {
-            // Fallback to mock data if API fails
-            const mockData = {
-                nome: name,
-                cpf: generateMockCPF(),
-                dataNascimento: generateMockDate(),
-                naturalidade: generateMockCity(),
-                situacao: 'Regular',
-                fonte: 'Portal da Transparência (simulado)',
-                ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
-            };
-            
-            console.warn('Portal da Transparência API failed, using mock data');
-            return mockData;
+            // NO MOCK DATA - Return error if API fails
+            throw new Error(`Portal da Transparência API unavailable: ${response.status} ${response.statusText}`);
         }
     } catch (error) {
         console.error('Portal da Transparência error:', error);
-        // Return mock data as fallback
-        return {
-            nome: name,
-            cpf: generateMockCPF(),
-            dataNascimento: generateMockDate(),
-            naturalidade: generateMockCity(),
-            situacao: 'Regular',
-            fonte: 'Portal da Transparência (erro)',
-            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
-        };
+        // NO MOCK DATA - Return error
+        throw new Error(`Portal da Transparência search failed: ${error.message}`);
     }
 }
 
 async function searchPortalTransparenciaByCPF(cpf) {
     try {
-        const mockData = {
-            cpf: formatCPF(cpf),
-            nome: generateMockName(),
-            dataNascimento: generateMockDate(),
-            nomeMae: generateMockName(),
-            situacao: 'Regular',
-            emissao: generateMockDate(),
-            digitoVerificador: cpf.slice(-2),
-            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
-        };
+        // Real API call to Portal da Transparência for CPF
+        const response = await fetch(`https://api.portaldatransparencia.gov.br/api-de-dados/pessoa-fisica?cpf=${cpf}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (compatible; BackgroundCheckPro/1.0)'
+            }
+        });
         
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        
-        return mockData;
+        if (response.ok) {
+            const data = await response.json();
+            return {
+                cpf: formatCPF(cpf),
+                nome: data.nome || 'Não encontrado',
+                dataNascimento: data.dataNascimento || 'Não informado',
+                nomeMae: data.nomeMae || 'Não informado',
+                situacao: 'Regular',
+                emissao: data.dataEmissao || 'Não informado',
+                digitoVerificador: cpf.slice(-2),
+                ultimaAtualizacao: new Date().toLocaleDateString('pt-BR'),
+                fonte: 'Portal da Transparência'
+            };
+        } else {
+            throw new Error(`Portal da Transparência API unavailable: ${response.status} ${response.statusText}`);
+        }
     } catch (error) {
         console.error('CPF search error:', error);
-        return null;
+        throw new Error(`CPF search failed: ${error.message}`);
     }
 }
 
 async function searchPortalTransparenciaByNIS(nis) {
     try {
-        const mockData = {
-            nis: nis,
-            nome: generateMockName(),
-            cpf: generateMockCPF(),
-            dataNascimento: generateMockDate(),
-            programas: [
-                { nome: 'Bolsa Família', situacao: 'Ativo', valor: 'R$ 600,00' },
-                { nome: 'Auxílio Brasil', situacao: 'Ativo', valor: 'R$ 400,00' }
-            ],
-            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
-        };
+        // Real API call to Portal da Transparência for NIS
+        const response = await fetch(`https://api.portaldatransparencia.gov.br/api-de-dados/pessoa-fisica?nis=${nis}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (compatible; BackgroundCheckPro/1.0)'
+            }
+        });
         
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        return mockData;
+        if (response.ok) {
+            const data = await response.json();
+            return {
+                nis: nis,
+                nome: data.nome || 'Não encontrado',
+                cpf: data.cpf || 'Não encontrado',
+                dataNascimento: data.dataNascimento || 'Não informado',
+                nomeMae: data.nomeMae || 'Não informado',
+                situacao: data.situacao || 'Não encontrado',
+                emissao: data.dataEmissao || 'Não informado',
+                digitoVerificador: data.digitoVerificador || 0,
+                ultimaAtualizacao: new Date().toLocaleDateString('pt-BR'),
+                fonte: 'Portal da Transparência'
+            };
+        } else {
+            throw new Error(`Portal da Transparência API unavailable: ${response.status} ${response.statusText}`);
+        }
     } catch (error) {
         console.error('NIS search error:', error);
-        return null;
+        throw new Error(`NIS search failed: ${error.message}`);
     }
 }
 
@@ -1731,57 +1734,41 @@ async function searchCivilRegistry(query, page = 1, limit = 20) {
     }
 }
 
-async function getMockCivilRegistryData(query, page = 1, limit = 20) {
+async function getRealCivilRegistryData(query, page = 1, limit = 20) {
     try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const response = await fetch(`https://api.civilregistry.gov/registry/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'BackgroundCheckPro/1.0'
+            },
+            timeout: 5000
+        });
         
-        return {
-            success: true,
-            data: {
-                data: [
-                    {
-                        id: Math.random().toString(36).substr(2, 9),
-                        nome: query,
-                        documento: generateMockCPF(),
-                        dataNascimento: generateMockDate(),
-                        naturalidade: generateMockCity() + '/' + generateMockState(),
-                        idade: Math.floor(Math.random() * 50) + 25,
-                        estadoCivil: ['Solteiro', 'Casado', 'Divorciado'][Math.floor(Math.random() * 3)],
-                        profissao: ['Engenheiro', 'Médico', 'Professor', 'Advogado'][Math.floor(Math.random() * 4)],
-                        escolaridade: ['Fundamental', 'Médio', 'Superior', 'Pós-graduação'][Math.floor(Math.random() * 4)]
-                    }
-                ],
-                total: Math.floor(Math.random() * 100) + 50,
-                pagina: page,
-                totalPaginas: Math.floor(Math.random() * 10) + 1
-            },
-            pagination: {
-                currentPage: page,
-                totalPages: Math.floor(Math.random() * 10) + 1,
-                hasNext: page < 5,
-                hasPrevious: page > 1
-            },
-            mlAnalysis: {
-                confidence: 0.7,
-                riskLevel: ['Baixo', 'Médio', 'Alto'][Math.floor(Math.random() * 3)],
-                anomalies: [],
-                patterns: [{ type: 'Nome Completo', confidence: 0.8, description: 'Nome completo detectado' }],
-                mlScore: Math.random() * 0.5 + 0.3,
-                recommendations: [{
-                    priority: 'RECOMENDADO',
-                    action: 'Verificação adicional',
-                    reason: 'Análise simulada'
-                }]
-            },
-            source: 'Civil Registry (Mock)',
-            query: query,
-            timestamp: new Date().toISOString()
-        };
+        if (response.ok) {
+            const data = await response.json();
+            return {
+                success: true,
+                data: data.data,
+                pagination: data.pagination,
+                mlAnalysis: data.mlAnalysis,
+                source: 'Civil Registry API',
+                query: query,
+                timestamp: new Date().toISOString()
+            };
+        } else {
+            return {
+                success: false,
+                error: response.statusText,
+                fallback: null
+            };
+        }
     } catch (error) {
-        console.error('Mock Civil Registry data error:', error);
+        console.error('Real Civil Registry data error:', error);
         return {
             success: false,
-            error: error.message
+            error: error.message,
+            fallback: null
         };
     }
 }
