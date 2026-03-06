@@ -94,6 +94,18 @@ import {
     getEmailEnrichment
 } from './src/services/enrichedMiningService.js';
 
+// CPF Generator Service
+import {
+    generateCPFFromName,
+    generateCPFOptions,
+    validateCPF,
+    formatCPF,
+    generateCPFWithState,
+    batchGenerateCPF,
+    analyzeCPF,
+    isBlacklistedCPF
+} from './src/services/cpfGeneratorService.js';
+
 // endpoints simples que simulam consultas a serviços externos (GEOSAMPA, banco de
 // imagens, cadastro de saídas de incêndio etc). Em produção seriam proxies ou
 // agregadores reais.
@@ -219,6 +231,74 @@ app.get('/api/mining/email/:email', async (req, res) => {
     try {
         const data = await getEmailEnrichment(email);
         res.json({ email, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================================
+// CPF GENERATOR ENDPOINTS
+// ============================================================================
+
+app.get('/api/cpf/generate/:name', (req, res) => {
+    const { name } = req.params;
+    const { state, options = '1' } = req.query;
+    
+    try {
+        if (options > '1') {
+            // Generate multiple options
+            const count = parseInt(options);
+            const cpfOptions = generateCPFOptions(name, count);
+            res.json({ name, state, options: cpfOptions });
+        } else {
+            // Generate single CPF
+            const cpfResult = state 
+                ? generateCPFWithState(name, state)
+                : generateCPFFromName(name);
+            res.json({ name, state, result: cpfResult });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/cpf/batch', (req, res) => {
+    const { names } = req.body;
+    
+    if (!Array.isArray(names)) {
+        return res.status(400).json({ error: 'names must be an array' });
+    }
+    
+    try {
+        const results = batchGenerateCPF(names);
+        res.json({ count: names.length, results });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/cpf/validate/:cpf', (req, res) => {
+    const { cpf } = req.params;
+    
+    try {
+        const analysis = analyzeCPF(cpf);
+        res.json(analysis);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/cpf/format/:cpf', (req, res) => {
+    const { cpf } = req.params;
+    
+    try {
+        const formatted = formatCPF(cpf);
+        const isValid = validateCPF(cpf);
+        res.json({ 
+            original: cpf, 
+            formatted: formatted, 
+            isValid: isValid 
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

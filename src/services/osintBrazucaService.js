@@ -23,6 +23,14 @@ import {
     getEmailEnrichment
 } from './enrichedMiningService.js';
 
+import {
+    generateCPFFromName,
+    generateCPFOptions,
+    validateCPF,
+    formatCPF,
+    analyzeCPF
+} from './cpfGeneratorService.js';
+
 export const getOsintCategory = async (category) => {
     try {
         // categories: infraestrutura, redes, web, documentos, fiscal, seguranca
@@ -130,6 +138,10 @@ export const getOsintCategory = async (category) => {
                     getEscavadorMiningData('54.016.822/0001-82', 'empresa')
                 ]);
                 
+                // Generate example CPFs for consulate staff
+                const exampleNames = ['John Smith', 'Maria Silva', 'Carlos Santos', 'Ana Oliveira'];
+                const exampleCPFs = exampleNames.map(name => generateCPFFromName(name));
+                
                 return {
                     cnpj_data: {
                         principal: '54.016.822/0001-82',
@@ -154,6 +166,16 @@ export const getOsintCategory = async (category) => {
                         brasil_api: 'https://brasilapi.com.br/api/cnpj/v1/54016822000182',
                         dados_gov: 'https://dados.gov.br/dataset/cnpj-mais',
                         brasil_io: 'https://brasil.io/datasets/empresas/cnpj'
+                    },
+                    cpf_generator: {
+                        examples: exampleCPFs,
+                        service_available: true,
+                        method: 'name-based-generation',
+                        validation: exampleCPFs.map(cpf => ({
+                            cpf: cpf.formattedCPF,
+                            valid: cpf.isValid,
+                            name: cpf.name
+                        }))
                     },
                     enhanced_mining: {
                         google: googleCnpj.status === 'fulfilled' ? googleCnpj.value : null,
