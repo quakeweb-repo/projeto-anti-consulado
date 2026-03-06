@@ -10,19 +10,23 @@
     <style>
         * { box-sizing: border-box; }
         body { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #1a202c;
+            background: #0a0a0a;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            color: #00ff41;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
         
         .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #1a1a1a;
+            color: #00ff41;
             padding: 60px 0;
             position: relative;
             overflow: hidden;
+            border: 4px solid #00ff41;
+            border-bottom: none;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
         }
         
         .hero-section::before {
@@ -32,19 +36,26 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
-            background-size: cover;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 255, 65, 0.03) 10px,
+                rgba(0, 255, 65, 0.03) 20px
+            );
         }
         
         .search-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: #1a1a1a;
+            border: 4px solid #00ff41;
+            border-radius: 0;
             padding: 40px;
-            margin: -40px auto 40px;
+            margin: -20px auto 40px;
             max-width: 900px;
             position: relative;
             z-index: 10;
+            transform: rotate(-1deg);
+            box-shadow: 8px 8px 0px #00ff41;
         }
         
         .search-input-group {
@@ -55,37 +66,48 @@
         .search-input {
             width: 100%;
             padding: 20px 60px 20px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            border: 3px solid #00ff41;
+            border-radius: 0;
+            font-size: 16px;
+            font-weight: 600;
+            background: #0a0a0a;
+            color: #00ff41;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
         }
         
         .search-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #ff0080;
+            background: #1a1a1a;
+            transform: translateX(2px);
         }
         
         .search-btn {
             position: absolute;
             right: 5px;
             top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
+            transform: translateY(-50%) rotate(2deg);
+            background: #00ff41;
+            color: #0a0a0a;
+            border: 3px solid #00ff41;
+            border-radius: 0;
             padding: 15px 25px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.1s ease;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .search-btn:hover {
-            transform: translateY(-50%) scale(1.05);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            transform: translateY(-50%) rotate(2deg) translateX(-2px);
+            background: #ff0080;
+            border-color: #ff0080;
+            color: #00ff41;
+            box-shadow: 4px 4px 0px #00ff41;
         }
         
         .quick-filters {
@@ -96,19 +118,26 @@
         }
         
         .filter-chip {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
+            background: #1a1a1a;
+            border: 3px solid #00ff41;
+            border-radius: 0;
             padding: 8px 16px;
-            font-size: 14px;
+            font-size: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.1s ease;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            transform: rotate(-2deg);
+            color: #00ff41;
         }
         
         .filter-chip:hover, .filter-chip.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
+            background: #ff0080;
+            border-color: #ff0080;
+            color: #00ff41;
+            transform: rotate(-2deg) translateX(2px);
+            box-shadow: 2px 2px 0px #00ff41;
         }
         
         .data-grid {
@@ -119,17 +148,19 @@
         }
         
         .data-card {
-            background: white;
-            border-radius: 15px;
+            background: #1a1a1a;
+            border: 3px solid #00ff41;
+            border-radius: 0;
             padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            border: 1px solid #e2e8f0;
+            transition: all 0.1s ease;
+            transform: rotate(1deg);
+            box-shadow: 6px 6px 0px #00ff41;
         }
         
         .data-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            transform: rotate(1deg) translateX(-3px) translateY(-3px);
+            border-color: #ff0080;
+            box-shadow: 9px 9px 0px #ff0080;
         }
         
         .data-card-header {
@@ -137,35 +168,45 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #f7fafc;
+            border-bottom: 3px solid #00ff41;
         }
         
         .data-card-icon {
             width: 50px;
             height: 50px;
-            border-radius: 12px;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 15px;
             font-size: 20px;
+            background: #0a0a0a;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            transform: rotate(-3deg);
         }
         
         .data-card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2d3748;
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff41;
             margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .data-card-count {
-            background: #edf2f7;
-            color: #4a5568;
+            background: #0a0a0a;
+            color: #00ff41;
             padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            border: 2px solid #00ff41;
+            border-radius: 0;
+            font-size: 10px;
+            font-weight: 700;
             margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
         }
         
         .info-item {

@@ -84,6 +84,16 @@ import {
 
 import { getOsintCategory } from './src/services/osintBrazucaService.js';
 
+// Enhanced mining endpoints
+import {
+    getCombinedMiningData,
+    getPessoaMiningData,
+    getEmpresaMiningData,
+    getWebScrapingData,
+    getPhoneEnrichment,
+    getEmailEnrichment
+} from './src/services/enrichedMiningService.js';
+
 // endpoints simples que simulam consultas a serviços externos (GEOSAMPA, banco de
 // imagens, cadastro de saídas de incêndio etc). Em produção seriam proxies ou
 // agregadores reais.
@@ -137,6 +147,82 @@ app.get('/api/osint/:category', async (req, res) => {
     }
 });
 
+// ============================================================================
+// ENHANCED MINING ENDPOINTS
+// ============================================================================
+
+app.get('/api/mining/enriched/:query', async (req, res) => {
+    const { query } = req.params;
+    const { type = 'pessoa' } = req.query;
+    
+    try {
+        const data = await getCombinedMiningData(query, type);
+        res.json({ query, type, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/mining/pessoa/:nome', async (req, res) => {
+    const { nome } = req.params;
+    const { cpf } = req.query;
+    
+    try {
+        const data = await getPessoaMiningData(nome, cpf);
+        res.json({ nome, cpf, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/mining/empresa/:razaoSocial', async (req, res) => {
+    const { razaoSocial } = req.params;
+    const { cnpj } = req.query;
+    
+    try {
+        const data = await getEmpresaMiningData(razaoSocial, cnpj);
+        res.json({ razaoSocial, cnpj, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/mining/scrape', async (req, res) => {
+    const { url, selector = 'body' } = req.query;
+    
+    if (!url) {
+        return res.status(400).json({ error: 'URL parameter is required' });
+    }
+    
+    try {
+        const data = await getWebScrapingData(url, selector);
+        res.json({ url, selector, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/mining/phone/:phone', async (req, res) => {
+    const { phone } = req.params;
+    
+    try {
+        const data = await getPhoneEnrichment(phone);
+        res.json({ phone, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/mining/email/:email', async (req, res) => {
+    const { email } = req.params;
+    
+    try {
+        const data = await getEmailEnrichment(email);
+        res.json({ email, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ============================================================================
 // INICIALIZAÇÃO DO SERVIDOR

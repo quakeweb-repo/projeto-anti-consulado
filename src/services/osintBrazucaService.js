@@ -11,6 +11,18 @@ import {
     getFireExitData
 } from './miningService.js';
 
+import {
+    getGoogleMiningData,
+    getFacebookMiningData,
+    getEscavadorMiningData,
+    getCombinedMiningData,
+    getPessoaMiningData,
+    getEmpresaMiningData,
+    getWebScrapingData,
+    getPhoneEnrichment,
+    getEmailEnrichment
+} from './enrichedMiningService.js';
+
 export const getOsintCategory = async (category) => {
     try {
         // categories: infraestrutura, redes, web, documentos, fiscal, seguranca
@@ -24,6 +36,13 @@ export const getOsintCategory = async (category) => {
                 };
                 
             case 'redes':
+                // Enhanced social media mining with real APIs
+                const [googleSocial, facebookSocial, escavadorSocial] = await Promise.allSettled([
+                    getGoogleMiningData('Consulado EUA São Paulo', 'pessoa'),
+                    getFacebookMiningData('US Embassy Brazil', 'pessoa'),
+                    getEscavadorMiningData('Consulado Estados Unidos', 'pessoa')
+                ]);
+                
                 return {
                     social_media_sources: [
                         { plataforma: 'LinkedIn', url: 'https://linkedin.com', dados: 'Perfis e empresas' },
@@ -33,11 +52,23 @@ export const getOsintCategory = async (category) => {
                         { plataforma: 'TikTok', url: 'https://tiktok.com', dados: 'Conteúdo multimídia' }
                     ],
                     fotos: await getPhotoCollectionLive(),
+                    enhanced_mining: {
+                        google: googleSocial.status === 'fulfilled' ? googleSocial.value : null,
+                        facebook: facebookSocial.status === 'fulfilled' ? facebookSocial.value : null,
+                        escavador: escavadorSocial.status === 'fulfilled' ? escavadorSocial.value : null
+                    },
                     categorizado: true,
                     timestamp: new Date().toISOString()
                 };
                 
             case 'web':
+                // Enhanced web mining with Google, Facebook, and Escavador
+                const [googleWeb, facebookWeb, escavadorWeb] = await Promise.allSettled([
+                    getGoogleMiningData('Henri Durant 500 São Paulo', 'empresa'),
+                    getFacebookMiningData('Henri Durant 500', 'empresa'),
+                    getEscavadorMiningData('54.016.822/0001-82', 'empresa')
+                ]);
+                
                 return {
                     web_sources: await getWebData(),
                     google_hacking: {
@@ -51,6 +82,11 @@ export const getOsintCategory = async (category) => {
                         brasil_io: 'https://brasil.io/datasets',
                         dados_gov: 'https://dados.gov.br',
                         brasilia_api: 'https://brasilapi.com.br'
+                    },
+                    enhanced_mining: {
+                        google: googleWeb.status === 'fulfilled' ? googleWeb.value : null,
+                        facebook: facebookWeb.status === 'fulfilled' ? facebookWeb.value : null,
+                        escavador: escavadorWeb.status === 'fulfilled' ? escavadorWeb.value : null
                     },
                     categorizado: true,
                     timestamp: new Date().toISOString()
@@ -87,6 +123,13 @@ export const getOsintCategory = async (category) => {
                 };
                 
             case 'cnpj':
+                // Enhanced CNPJ mining with multiple APIs
+                const [googleCnpj, facebookCnpj, escavadorCnpj] = await Promise.allSettled([
+                    getGoogleMiningData('54.016.822/0001-82', 'empresa'),
+                    getFacebookMiningData('US Embassy São Paulo', 'empresa'),
+                    getEscavadorMiningData('54.016.822/0001-82', 'empresa')
+                ]);
+                
                 return {
                     cnpj_data: {
                         principal: '54.016.822/0001-82',
@@ -111,6 +154,11 @@ export const getOsintCategory = async (category) => {
                         brasil_api: 'https://brasilapi.com.br/api/cnpj/v1/54016822000182',
                         dados_gov: 'https://dados.gov.br/dataset/cnpj-mais',
                         brasil_io: 'https://brasil.io/datasets/empresas/cnpj'
+                    },
+                    enhanced_mining: {
+                        google: googleCnpj.status === 'fulfilled' ? googleCnpj.value : null,
+                        facebook: facebookCnpj.status === 'fulfilled' ? facebookCnpj.value : null,
+                        escavador: escavadorCnpj.status === 'fulfilled' ? escavadorCnpj.value : null
                     },
                     categorizado: true,
                     timestamp: new Date().toISOString()
