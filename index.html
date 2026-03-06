@@ -620,6 +620,21 @@
                 metaAds: { key: '', enabled: false, endpoint: 'https://www.facebook.com/ads/library/api' }
             },
             
+            // Web Scraping Configuration (BuscaPrime Style)
+            scrapers: {
+                enabled: true,
+                sources: [
+                    { name: 'Google Search', url: 'https://www.google.com/search', method: 'GET', selector: '.g' },
+                    { name: 'Facebook Public', url: 'https://www.facebook.com/public', method: 'GET', selector: '.profileLink' },
+                    { name: 'Instagram Hashtags', url: 'https://www.instagram.com/explore/tags', method: 'GET', selector: '.v1Nh3' },
+                    { name: 'LinkedIn Search', url: 'https://www.linkedin.com/search/results', method: 'GET', selector: '.search-result' },
+                    { name: 'Twitter Search', url: 'https://twitter.com/search', method: 'GET', selector: '.tweet' },
+                    { name: 'Reddit Search', url: 'https://www.reddit.com/search', method: 'GET', selector: '.Post' },
+                    { name: 'YouTube Search', url: 'https://www.youtube.com/results', method: 'GET', selector: '.ytd-video-renderer' },
+                    { name: 'Telegram Public', url: 'https://t.me/s', method: 'GET', selector: '.tgme_widget_message' }
+                ]
+            },
+            
             // CORS Proxy for production
             corsProxy: 'https://cors-anywhere.herokuapp.com/',
             
@@ -887,15 +902,18 @@
             const progressEl = document.getElementById('progressFill');
             
             const steps = [
-                { source: 'publica.cnpj.ws', url: `https://publica.cnpj.ws/cnpj/${cnpj}`, progress: 15, type: 'cnpj' },
-                { source: 'ReceitaWS', url: `https://www.receitaws.com.br/v1/cnpj/${cnpj}`, progress: 30, type: 'cnpj' },
-                { source: 'Brasil.IO', url: `https://brasil.io/api/dataset/socios-brasil/socios/`, progress: 45, type: 'socios' },
-                { source: 'Portal Transparência', url: `https://api.portaldatransparencia.gov.br/api-de-dados/ceis`, progress: 60, type: 'transparencia' },
-                { source: 'Google Search', url: `https://www.googleapis.com/customsearch/v1`, progress: 70, type: 'google' },
-                { source: 'Facebook Graph', url: `https://graph.facebook.com/v18.0/`, progress: 80, type: 'facebook' },
-                { source: 'Instagram Basic', url: `https://graph.instagram.com/`, progress: 85, type: 'instagram' },
-                { source: 'Meta Ads Library', url: `https://www.facebook.com/ads/library/api/`, progress: 90, type: 'metaads' },
-                { source: 'IBGE', url: `https://servicodados.ibge.gov.br/api/v1/localidades/municipios`, progress: 95, type: 'ibge' },
+                { source: 'publica.cnpj.ws', url: `https://publica.cnpj.ws/cnpj/${cnpj}`, progress: 10, type: 'cnpj' },
+                { source: 'ReceitaWS', url: `https://www.receitaws.com.br/v1/cnpj/${cnpj}`, progress: 20, type: 'cnpj' },
+                { source: 'Brasil.IO', url: `https://brasil.io/api/dataset/socios-brasil/socios/`, progress: 30, type: 'socios' },
+                { source: 'Portal Transparência', url: `https://api.portaldatransparencia.gov.br/api-de-dados/ceis`, progress: 40, type: 'transparencia' },
+                { source: 'Google Search (Scraping)', url: `https://www.google.com/search`, progress: 50, type: 'google-scrape' },
+                { source: 'Facebook Public (Scraping)', url: `https://www.facebook.com/public`, progress: 60, type: 'facebook-scrape' },
+                { source: 'Instagram Hashtags (Scraping)', url: `https://www.instagram.com/explore/tags`, progress: 70, type: 'instagram-scrape' },
+                { source: 'LinkedIn Search (Scraping)', url: `https://www.linkedin.com/search/results`, progress: 75, type: 'linkedin-scrape' },
+                { source: 'Twitter Search (Scraping)', url: `https://twitter.com/search`, progress: 80, type: 'twitter-scrape' },
+                { source: 'Reddit Search (Scraping)', url: `https://www.reddit.com/search`, progress: 85, type: 'reddit-scrape' },
+                { source: 'YouTube Search (Scraping)', url: `https://www.youtube.com/results`, progress: 90, type: 'youtube-scrape' },
+                { source: 'Telegram Public (Scraping)', url: `https://t.me/s`, progress: 95, type: 'telegram-scrape' },
                 { source: 'Consolidation', url: '/consolidate', progress: 100, type: 'consolidate' }
             ];
             
@@ -911,17 +929,29 @@
                 try {
                     let data = null;
                     switch(step.type) {
-                        case 'google':
-                            data = await searchGoogle(query);
+                        case 'google-scrape':
+                            data = await scrapeGoogle(query);
                             break;
-                        case 'facebook':
-                            data = await searchFacebook(query);
+                        case 'facebook-scrape':
+                            data = await scrapeFacebook(query);
                             break;
-                        case 'instagram':
-                            data = await searchInstagram(query);
+                        case 'instagram-scrape':
+                            data = await scrapeInstagram(query);
                             break;
-                        case 'metaads':
-                            data = await searchMetaAds(query);
+                        case 'linkedin-scrape':
+                            data = await scrapeLinkedIn(query);
+                            break;
+                        case 'twitter-scrape':
+                            data = await scrapeTwitter(query);
+                            break;
+                        case 'reddit-scrape':
+                            data = await scrapeReddit(query);
+                            break;
+                        case 'youtube-scrape':
+                            data = await scrapeYouTube(query);
+                            break;
+                        case 'telegram-scrape':
+                            data = await scrapeTelegram(query);
                             break;
                         case 'cnpj':
                             data = await searchCNPJ(cnpj);
@@ -940,21 +970,22 @@
                     results[step.type] = data;
                     
                     if (data) {
-                        logEl.innerHTML += `<div style="margin-bottom: 5px;"><span style="color: #00ff88;">✓</span> ${step.source}: Dados recebidos</div>`;
+                        const count = Array.isArray(data.data) ? data.data.length : (data.items ? data.items.length : 1);
+                        logEl.innerHTML += `<div style="margin-bottom: 5px;"><span style="color: #00ff88;">✓</span> ${step.source}: ${count} resultados</div>`;
                     } else {
-                        logEl.innerHTML += `<div style="margin-bottom: 5px;"><span style="color: #ffcc00;">⚠</span> ${step.source}: API não configurada</div>`;
+                        logEl.innerHTML += `<div style="margin-bottom: 5px;"><span style="color: #ffcc00;">⚠</span> ${step.source}: Sem resultados</div>`;
                     }
                 } catch (error) {
                     const errorMsg = handleError(error, step.source);
                     logEl.innerHTML += `<div style="margin-bottom: 5px;"><span style="color: #ff4444;">✗</span> ${step.source}: ${errorMsg}</div>`;
                 }
                 
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 400));
             }
             
             setTimeout(() => {
                 document.getElementById('progressContainer').style.display = 'none';
-                displayRealResults(query, cnpj, results);
+                displayScrapedResults(query, cnpj, results);
             }, 800);
         }
         
@@ -973,7 +1004,7 @@
             return `${base.substr(0,2)}.${base.substr(2,3)}.${base.substr(5,3)}/${base.substr(8,4)}-${d1}${d2}`;
         }
         
-        function displayRealResults(query, cnpj, results) {
+        function displayScrapedResults(query, cnpj, results) {
             const html = `
                 <div class="success-message">
                     <i class="fas fa-check-circle"></i> Busca concluída com sucesso! (-${APP.searchCost} créditos)
@@ -983,17 +1014,290 @@
                     ${generateCNPJCard(cnpj, results.cnpj)}
                     ${generateSociosCard(results.socios)}
                     ${generateTransparencyCard(results.transparencia)}
-                    ${generateEnvironmentalCard()}
-                    ${generateGeoCard()}
-                    ${generateIBGECard()}
-                    ${generateGoogleCard(results.google)}
-                    ${generateFacebookCard(results.facebook)}
-                    ${generateInstagramCard(results.instagram)}
-                    ${generateMetaAdsCard(results.metaads)}
+                    ${generateGoogleScrapeCard(results['google-scrape'])}
+                    ${generateFacebookScrapeCard(results['facebook-scrape'])}
+                    ${generateInstagramScrapeCard(results['instagram-scrape'])}
+                    ${generateLinkedInScrapeCard(results['linkedin-scrape'])}
+                    ${generateTwitterScrapeCard(results['twitter-scrape'])}
+                    ${generateRedditScrapeCard(results['reddit-scrape'])}
+                    ${generateYouTubeScrapeCard(results['youtube-scrape'])}
+                    ${generateTelegramScrapeCard(results['telegram-scrape'])}
                 </div>
             `;
             document.getElementById('results').innerHTML = html;
-            addToHistory(query, 'OSINT Multi-Source', APP.searchCost, 'Concluído');
+            addToHistory(query, 'OSINT Web Scraping', APP.searchCost, 'Concluído');
+        }
+        
+        function generateGoogleScrapeCard(data) {
+            if (!data || !data.items || data.items.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon blue"><i class="fab fa-google"></i></div>
+                            <div><div class="card-title">Google Search</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.items.slice(0, 3).map(item => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">${item.title}</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">${item.snippet}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${item.link}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon blue"><i class="fab fa-google"></i></div>
+                        <div><div class="card-title">Google Search</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.items.length} resultados</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
+        }
+        
+        function generateFacebookScrapeCard(data) {
+            if (!data || !data.data || data.data.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon blue"><i class="fab fa-facebook"></i></div>
+                            <div><div class="card-title">Facebook Public</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.data.slice(0, 3).map(profile => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">${profile.name}</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">ID: ${profile.id}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${profile.link}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon blue"><i class="fab fa-facebook"></i></div>
+                        <div><div class="card-title">Facebook Public</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.data.length} perfis</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
+        }
+        
+        function generateInstagramScrapeCard(data) {
+            if (!data || !data.data || data.data.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon purple"><i class="fab fa-instagram"></i></div>
+                            <div><div class="card-title">Instagram Posts</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.data.slice(0, 3).map(post => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">Post</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">Likes: ${post.likes}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${post.link}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon purple"><i class="fab fa-instagram"></i></div>
+                        <div><div class="card-title">Instagram Posts</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.data.length} posts</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
+        }
+        
+        function generateLinkedInScrapeCard(data) {
+            if (!data || !data.data || data.data.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon blue"><i class="fab fa-linkedin"></i></div>
+                            <div><div class="card-title">LinkedIn Search</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.data.slice(0, 3).map(profile => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">${profile.name}</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">${profile.title}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${profile.link}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon blue"><i class="fab fa-linkedin"></i></div>
+                        <div><div class="card-title">LinkedIn Search</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.data.length} perfis</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
+        }
+        
+        function generateTwitterScrapeCard(data) {
+            if (!data || !data.data || data.data.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon blue"><i class="fab fa-twitter"></i></div>
+                            <div><div class="card-title">Twitter Search</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.data.slice(0, 3).map(tweet => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">@${tweet.author}</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">${tweet.text}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${tweet.link}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon blue"><i class="fab fa-twitter"></i></div>
+                        <div><div class="card-title">Twitter Search</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.data.length} tweets</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
+        }
+        
+        function generateRedditScrapeCard(data) {
+            if (!data || !data.data || data.data.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon orange"><i class="fab fa-reddit"></i></div>
+                            <div><div class="card-title">Reddit Search</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.data.slice(0, 3).map(post => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">${post.title}</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">r/${post.subreddit}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${post.link}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon orange"><i class="fab fa-reddit"></i></div>
+                        <div><div class="card-title">Reddit Search</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.data.length} posts</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
+        }
+        
+        function generateYouTubeScrapeCard(data) {
+            if (!data || !data.data || data.data.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon red"><i class="fab fa-youtube"></i></div>
+                            <div><div class="card-title">YouTube Search</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.data.slice(0, 3).map(video => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">${video.title}</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">${video.channel}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${video.link}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon red"><i class="fab fa-youtube"></i></div>
+                        <div><div class="card-title">YouTube Search</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.data.length} vídeos</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
+        }
+        
+        function generateTelegramScrapeCard(data) {
+            if (!data || !data.data || data.data.length === 0) {
+                return `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon blue"><i class="fab fa-telegram"></i></div>
+                            <div><div class="card-title">Telegram Public</div><div class="card-subtitle">Web Scraping</div></div>
+                            <span class="status-badge badge-warning">N/D</span>
+                        </div>
+                        <div class="data-row"><span class="data-label">Status</span><span class="data-value warning">Sem resultados</span></div>
+                    </div>
+                `;
+            }
+            
+            const results = data.data.slice(0, 3).map(message => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(0,212,255,0.1); border-radius: 8px;">
+                    <div style="font-weight: 600; color: #00d4ff;">Mensagem</div>
+                    <div style="font-size: 0.9rem; color: #8892b0;">${message.text}</div>
+                    <div style="font-size: 0.8rem; color: #00ff88;">${message.date} • ${message.views}</div>
+                </div>`
+            ).join('');
+            
+            return `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon blue"><i class="fab fa-telegram"></i></div>
+                        <div><div class="card-title">Telegram Public</div><div class="card-subtitle">Web Scraping</div></div>
+                        <span class="status-badge badge-success">${data.data.length} mensagens</span>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">${results}</div>
+                </div>
+            `;
         }
         
         function generateGoogleCard(data) {
@@ -1302,16 +1606,229 @@
             alert('✅ APIs configuradas! Buscas agora usarão dados reais.');
         }
         
-        async function searchGoogle(query) {
-            if (!APP.apis.googleCustomSearch.enabled) return null;
+        // Web Scraping Functions (BuscaPrime Style)
+        async function scrapeGoogle(query) {
             try {
-                checkRateLimit();
-                const url = `${APP.apis.googleCustomSearch.endpoint}?key=${APP.apis.googleCustomSearch.key}&cx=017576662512334840461:6vuieenrka&q=${encodeURIComponent(query)}&num=10`;
-                const data = await makeRequest(url);
-                return data;
+                const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&num=10`;
+                const response = await makeRequest(url);
+                
+                // Parse HTML response (simplified)
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const searchResults = doc.querySelectorAll('.g');
+                searchResults.forEach(result => {
+                    const title = result.querySelector('h3')?.textContent || '';
+                    const link = result.querySelector('a')?.href || '';
+                    const snippet = result.querySelector('.VwiC3b')?.textContent || '';
+                    
+                    if (title && link) {
+                        results.push({ title, link, snippet });
+                    }
+                });
+                
+                return { items: results };
             } catch (error) {
-                console.error('Google Search error:', error);
-                throw new Error(handleError(error, 'Google Search'));
+                console.error('Google scraping error:', error);
+                return null;
+            }
+        }
+        
+        async function scrapeFacebook(query) {
+            try {
+                const url = `https://www.facebook.com/public?query=${encodeURIComponent(query)}`;
+                const response = await makeRequest(url);
+                
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const profiles = doc.querySelectorAll('.profileLink');
+                profiles.forEach(profile => {
+                    const name = profile.textContent || '';
+                    const link = profile.href || '';
+                    const id = link.split('/').pop() || '';
+                    
+                    if (name && link) {
+                        results.push({ name, id, link });
+                    }
+                });
+                
+                return { data: results };
+            } catch (error) {
+                console.error('Facebook scraping error:', error);
+                return null;
+            }
+        }
+        
+        async function scrapeInstagram(query) {
+            try {
+                const url = `https://www.instagram.com/explore/tags/${encodeURIComponent(query)}`;
+                const response = await makeRequest(url);
+                
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const posts = doc.querySelectorAll('.v1Nh3');
+                posts.forEach(post => {
+                    const link = post.querySelector('a')?.href || '';
+                    const image = post.querySelector('img')?.src || '';
+                    const likes = post.querySelector('.Nm9Fw')?.textContent || '0';
+                    
+                    if (link) {
+                        results.push({ link, image, likes });
+                    }
+                });
+                
+                return { data: results };
+            } catch (error) {
+                console.error('Instagram scraping error:', error);
+                return null;
+            }
+        }
+        
+        async function scrapeLinkedIn(query) {
+            try {
+                const url = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(query)}`;
+                const response = await makeRequest(url);
+                
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const profiles = doc.querySelectorAll('.search-result');
+                profiles.forEach(profile => {
+                    const name = profile.querySelector('.name')?.textContent || '';
+                    const title = profile.querySelector('.subline-level-1')?.textContent || '';
+                    const link = profile.querySelector('a')?.href || '';
+                    
+                    if (name && link) {
+                        results.push({ name, title, link });
+                    }
+                });
+                
+                return { data: results };
+            } catch (error) {
+                console.error('LinkedIn scraping error:', error);
+                return null;
+            }
+        }
+        
+        async function scrapeTwitter(query) {
+            try {
+                const url = `https://twitter.com/search?q=${encodeURIComponent(query)}`;
+                const response = await makeRequest(url);
+                
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const tweets = doc.querySelectorAll('.tweet');
+                tweets.forEach(tweet => {
+                    const text = tweet.querySelector('.tweet-text')?.textContent || '';
+                    const author = tweet.querySelector('.username')?.textContent || '';
+                    const link = tweet.querySelector('a')?.href || '';
+                    
+                    if (text && author) {
+                        results.push({ text, author, link });
+                    }
+                });
+                
+                return { data: results };
+            } catch (error) {
+                console.error('Twitter scraping error:', error);
+                return null;
+            }
+        }
+        
+        async function scrapeReddit(query) {
+            try {
+                const url = `https://www.reddit.com/search?q=${encodeURIComponent(query)}`;
+                const response = await makeRequest(url);
+                
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const posts = doc.querySelectorAll('.Post');
+                posts.forEach(post => {
+                    const title = post.querySelector('h3')?.textContent || '';
+                    const subreddit = post.querySelector('.s5r3o')?.textContent || '';
+                    const link = post.querySelector('a')?.href || '';
+                    
+                    if (title && subreddit) {
+                        results.push({ title, subreddit, link });
+                    }
+                });
+                
+                return { data: results };
+            } catch (error) {
+                console.error('Reddit scraping error:', error);
+                return null;
+            }
+        }
+        
+        async function scrapeYouTube(query) {
+            try {
+                const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+                const response = await makeRequest(url);
+                
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const videos = doc.querySelectorAll('.ytd-video-renderer');
+                videos.forEach(video => {
+                    const title = video.querySelector('#video-title')?.textContent || '';
+                    const channel = video.querySelector('#channel-name')?.textContent || '';
+                    const link = video.querySelector('a')?.href || '';
+                    
+                    if (title && channel) {
+                        results.push({ title, channel, link });
+                    }
+                });
+                
+                return { data: results };
+            } catch (error) {
+                console.error('YouTube scraping error:', error);
+                return null;
+            }
+        }
+        
+        async function scrapeTelegram(query) {
+            try {
+                const url = `https://t.me/s/${encodeURIComponent(query)}`;
+                const response = await makeRequest(url);
+                
+                const results = [];
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const messages = doc.querySelectorAll('.tgme_widget_message');
+                messages.forEach(message => {
+                    const text = message.querySelector('.tgme_widget_message_text')?.textContent || '';
+                    const date = message.querySelector('.tgme_widget_message_date')?.textContent || '';
+                    const views = message.querySelector('.tgme_widget_message_views')?.textContent || '';
+                    
+                    if (text) {
+                        results.push({ text, date, views });
+                    }
+                });
+                
+                return { data: results };
+            } catch (error) {
+                console.error('Telegram scraping error:', error);
+                return null;
             }
         }
         
