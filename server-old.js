@@ -33,14 +33,44 @@ app.get('/health', (req, res) => {
 // INFORMAÇÕES DO SISTEMA
 // ============================================================================
 
+// adicionamos rota informativa básica
 app.get('/api/info', (req, res) => {
     res.json({
-        sistema: "Background Check Pro - Sistema Profissional de Verificação",
-        versao: "2.0.0",
-        foco: "Verificação profunda de pessoas e empresas",
-        operador: "Background Check Pro Team",
+        sistema: "Sistema OSINT - Análise Predial",
+        versao: "1.0.0",
+        consulado: "Consulado dos EUA em São Paulo",
+        endereco: "Rua Henri Durant 500, São Paulo, SP, 04709-110",
+        operador: "Prefeitura de São Paulo / Polícia Civil",
         status: "Operacional"
     });
+});
+
+// ============================================================================
+// ROTAS DE DOMÍNIO - CONTEÚDOS RELACIONADOS AO CONSULADO
+// ============================================================================
+
+
+// infelizmente não há APIs públicas de documentos/séries, portanto
+// retornamos dados simulados baseado em scraping
+import { getPhysicalDocuments, getChiefMembers } from './src/services/consuladoService.js';
+
+// Enhanced Instagram Service
+import {
+    getInstagramProfileData,
+    batchInstagramAnalysis,
+    validateInstagramUsername
+} from './src/services/instagramService.js';
+
+app.get('/api/consulate/documents', (req, res) => {
+    const type = req.query.type;
+    if (type === 'structure' || type === 'physical') {
+        return res.json(getPhysicalDocuments());
+    }
+    res.status(400).json({ error: 'tipo inválido (use ?type=structure)' });
+});
+
+app.get('/api/consulate/members', (req, res) => {
+    res.json(getChiefMembers());
 });
 
 // ============================================================================
@@ -84,14 +114,10 @@ import {
     isBlacklistedCPF
 } from './src/services/cpfGeneratorService.js';
 
-// Enhanced Instagram Service
-import {
-    getInstagramProfileData,
-    batchInstagramAnalysis,
-    validateInstagramUsername
-} from './src/services/instagramService.js';
+// endpoints simples que simulam consultas a serviços externos (GEOSAMPA, banco de
+// imagens, cadastro de saídas de incêndio etc). Em produção seriam proxies ou
+// agregadores reais.
 
-// endpoints simples que simulam consultas a serviços externos
 app.get('/api/mining/geosampa', async (req, res) => {
     if (req.query.live) {
         return res.json(await getGeosampaDataLive());
@@ -287,60 +313,18 @@ app.get('/api/cpf/format/:cpf', (req, res) => {
 });
 
 // ============================================================================
-// INSTAGRAM ENHANCED ENDPOINTS - Superior to BuscaPrime
-// ============================================================================
-
-app.get('/api/instagram/profile/:username', async (req, res) => {
-    const { username } = req.params;
-    
-    try {
-        const profileData = await getInstagramProfileData(username);
-        res.json({ username, data: profileData });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/instagram/batch', async (req, res) => {
-    const { usernames } = req.body;
-    
-    if (!Array.isArray(usernames)) {
-        return res.status(400).json({ error: 'usernames must be an array' });
-    }
-    
-    try {
-        const results = await batchInstagramAnalysis(usernames);
-        res.json({ count: usernames.length, results });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/api/instagram/validate/:input', (req, res) => {
-    const { input } = req.params;
-    
-    try {
-        const validation = validateInstagramUsername(input);
-        res.json(validation);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ============================================================================
 // INICIALIZAÇÃO DO SERVIDOR
 // ============================================================================
 
 app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════════════════════╗
-║  BACKGROUND CHECK PRO - Sistema Profissional de Verificação     ║
+║  Sistema OSINT - Análise Predial Consulado Americano          ║
 ║  Servidor iniciado com sucesso                                ║
 ╠════════════════════════════════════════════════════════════════╣
 ║  URL: http://localhost:${PORT}                                 ║
-║  Foco: Verificação profunda de pessoas e empresas              ║
-║  Recursos: Instagram, CPF, CNPJ, OSINT avançado               ║
-║  Interface: Terminal-style neobrutalista                       ║
+║  Modo: Análise de Conformidade Predial                        ║
+║  Operador: Prefeitura de São Paulo / Polícia Civil            ║
 ╚════════════════════════════════════════════════════════════════╝
     `);
 });

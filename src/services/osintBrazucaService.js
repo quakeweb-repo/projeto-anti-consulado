@@ -31,6 +31,12 @@ import {
     analyzeCPF
 } from './cpfGeneratorService.js';
 
+import {
+    getInstagramProfileData,
+    batchInstagramAnalysis,
+    validateInstagramUsername
+} from './instagramService.js';
+
 export const getOsintCategory = async (category) => {
     try {
         // categories: infraestrutura, redes, web, documentos, fiscal, seguranca
@@ -44,26 +50,29 @@ export const getOsintCategory = async (category) => {
                 };
                 
             case 'redes':
-                // Enhanced social media mining with real APIs
-                const [googleSocial, facebookSocial, escavadorSocial] = await Promise.allSettled([
-                    getGoogleMiningData('Consulado EUA São Paulo', 'pessoa'),
-                    getFacebookMiningData('US Embassy Brazil', 'pessoa'),
-                    getEscavadorMiningData('Consulado Estados Unidos', 'pessoa')
+                // Enhanced social media mining with Instagram superiority
+                const [googleSocial, facebookSocial, escavadorSocial, instagramData] = await Promise.allSettled([
+                    getGoogleMiningData('Background Check Pro', 'pessoa'),
+                    getFacebookMiningData('OSINT Professional', 'pessoa'),
+                    getEscavadorMiningData('Verificação Profissional', 'pessoa'),
+                    getInstagramProfileData('backgroundcheckpro')
                 ]);
                 
                 return {
                     social_media_sources: [
-                        { plataforma: 'LinkedIn', url: 'https://linkedin.com', dados: 'Perfis e empresas' },
-                        { plataforma: 'Instagram', url: 'https://instagram.com', dados: 'Imagens georreferenciadas' },
-                        { plataforma: 'Twitter', url: 'https://twitter.com', dados: 'Tweets temáticos' },
+                        { plataforma: 'Instagram', url: 'https://instagram.com', dados: 'Análise completa superior ao BuscaPrime', enhanced: true },
+                        { plataforma: 'LinkedIn', url: 'https://linkedin.com', dados: 'Perfis e empresas profissionais' },
+                        { plataforma: 'Twitter', url: 'https://twitter.com', dados: 'Tweets e menções em tempo real' },
                         { plataforma: 'Facebook', url: 'https://facebook.com', dados: 'Páginas e discussões' },
-                        { plataforma: 'TikTok', url: 'https://tiktok.com', dados: 'Conteúdo multimídia' }
+                        { plataforma: 'TikTok', url: 'https://tiktok.com', dados: 'Conteúdo multimídia e vídeos' }
                     ],
+                    instagram_analysis: instagramData.status === 'fulfilled' ? instagramData.value : null,
                     fotos: await getPhotoCollectionLive(),
                     enhanced_mining: {
                         google: googleSocial.status === 'fulfilled' ? googleSocial.value : null,
                         facebook: facebookSocial.status === 'fulfilled' ? facebookSocial.value : null,
-                        escavador: escavadorSocial.status === 'fulfilled' ? escavadorSocial.value : null
+                        escavador: escavadorSocial.status === 'fulfilled' ? escavadorSocial.value : null,
+                        instagram: instagramData.status === 'fulfilled' ? instagramData.value : null
                     },
                     categorizado: true,
                     timestamp: new Date().toISOString()
