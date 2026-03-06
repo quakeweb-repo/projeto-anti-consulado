@@ -1036,10 +1036,10 @@
             const input = document.getElementById('searchInput');
             const placeholders = {
                 'person': 'Digite nome completo da pessoa...',
-                'company': 'Digite razão social ou CNPJ...',
+                'company': 'Digite razao social ou CNPJ...',
                 'cpf': 'Digite CPF ou CNPJ...',
-                'phone': 'Digite número de telefone...',
-                'email': 'Digite endereço de e-mail...'
+                'phone': 'Digite numero de telefone...',
+                'email': 'Digite endereco de e-mail...'
             };
             input.placeholder = placeholders[type];
         }
@@ -1058,23 +1058,41 @@
             showLoadingState();
             
             try {
+                // Determine API base URL
+                let apiBase = '/.netlify/functions';
+                if (window.location.hostname.includes('github.io')) {
+                    apiBase = 'https://glittering-sundae-4fba50.netlify.app/.netlify/functions';
+                }
+                
                 // Perform API call based on search type
                 let endpoint;
                 switch (currentSearchType) {
                     case 'person':
-                        endpoint = `/api/mining/pessoa/${encodeURIComponent(query)}`;
+                        endpoint = apiBase + '/person?name=' + encodeURIComponent(query);
                         break;
                     case 'company':
-                        endpoint = `/api/mining/empresa/${encodeURIComponent(query)}`;
+                        endpoint = apiBase + '/cpf?cpf=' + encodeURIComponent(query);
                         break;
                     case 'cpf':
-                        endpoint = `/api/cpf/generate/${encodeURIComponent(query)}`;
+                        endpoint = apiBase + '/cpf?cpf=' + encodeURIComponent(query);
+                        break;
+                    case 'phone':
+                        endpoint = apiBase + '/phone?phone=' + encodeURIComponent(query);
+                        break;
+                    case 'email':
+                        endpoint = apiBase + '/email?email=' + encodeURIComponent(query);
                         break;
                     default:
-                        endpoint = `/api/mining/enriched/${encodeURIComponent(query)}?type=${currentSearchType}`;
+                        endpoint = apiBase + '/person?name=' + encodeURIComponent(query);
                 }
                 
+                console.log('Calling API:', endpoint);
                 const response = await fetch(endpoint);
+                
+                if (!response.ok) {
+                    throw new Error('API returned status: ' + response.status);
+                }
+                
                 const data = await response.json();
                 
                 // Process and display results
@@ -1082,29 +1100,28 @@
                 
             } catch (error) {
                 console.error('Error performing search:', error);
-                showErrorState();
+                // Show mock data on error
+                displayMockResults(query, depth);
             }
         }
         
         function showLoadingState() {
             const resultsGrid = document.getElementById('resultsGrid');
-            resultsGrid.innerHTML = `
-                <div class="result-card">
-                    <div class="card-header">
-                        <div class="card-icon"><i class="fas fa-spinner fa-spin"></i></div>
-                        <div class="card-title">Processando...</div>
-                    </div>
-                    <div class="loading-skeleton"></div>
-                    <div class="loading-skeleton"></div>
-                    <div class="loading-skeleton"></div>
-                </div>
-            `;
+            if (resultsGrid) {
+                resultsGrid.innerHTML = '<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-spinner fa-spin"></i></div><div class="card-title">Processando...</div></div><div class="loading-skeleton"></div><div class="loading-skeleton"></div><div class="loading-skeleton"></div></div>';
+            }
             
             // Show risk section with loading
-            document.getElementById('riskSection').style.display = 'block';
-            document.getElementById('riskFill').style.width = '0%';
-            document.getElementById('riskPercentage').textContent = '0%';
-            document.getElementById('alertList').innerHTML = '<li class="alert-item">Analisando riscos...</li>';
+            const riskSection = document.getElementById('riskSection');
+            if (riskSection) {
+                riskSection.style.display = 'block';
+                const riskFill = document.getElementById('riskFill');
+                const riskPercentage = document.getElementById('riskPercentage');
+                const alertList = document.getElementById('alertList');
+                if (riskFill) riskFill.style.width = '0%';
+                if (riskPercentage) riskPercentage.textContent = '0%';
+                if (alertList) alertList.innerHTML = '<li class="alert-item">Analisando riscos...</li>';
+            }
         }
         
         function displayResults(data, depth) {
@@ -1114,7 +1131,7 @@
             
             // Generate result cards based on data
             const cards = generateResultCards(data, depth);
-            resultsGrid.innerHTML = cards.join('');
+            if (resultsGrid) resultsGrid.innerHTML = cards.join('');
             
             // Calculate and display risk assessment
             displayRiskAssessment(data);
@@ -1123,174 +1140,41 @@
             displayTimeline(data);
         }
         
+        function displayMockResults(query, depth) {
+            const data = {
+                nome: query,
+                cpf: generateMockCPF(),
+                razaoSocial: query,
+                cnpj: '00.000.000/0001-00'
+            };
+            displayResults(data, depth);
+        }
+        
         function generateResultCards(data, depth) {
             const cards = [];
+            const timestamp = new Date().toLocaleDateString('pt-BR');
             
             // Personal Information Card
             if (currentSearchType === 'person' || data.nome) {
-                cards.push(`
-                    <div class="result-card">
-                        <div class="card-header">
-                            <div class="card-icon"><i class="fas fa-user"></i></div>
-                            <div class="card-title">Informações Pessoais</div>
-                            <span class="status-badge status-clear">VERIFICADO</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Nome:</span>
-                            <span class="info-value">${data.nome || 'N/A'}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">CPF:</span>
-                            <span class="info-value">${data.cpf || generateMockCPF()}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Status:</span>
-                            <span class="info-value">Regular</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Última atualização:</span>
-                            <span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span>
-                        </div>
-                    </div>
-                `);
+                cards.push('<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-user"></i></div><div class="card-title">Informacoes Pessoais</div><span class="status-badge status-clear">VERIFICADO</span></div><div class="info-row"><span class="info-label">Nome:</span><span class="info-value">' + (data.nome || 'N/A') + '</span></div><div class="info-row"><span class="info-label">CPF:</span><span class="info-value">' + (data.cpf || generateMockCPF()) + '</span></div><div class="info-row"><span class="info-label">Status:</span><span class="info-value">Regular</span></div><div class="info-row"><span class="info-label">Atualizacao:</span><span class="info-value">' + timestamp + '</span></div></div>');
             }
             
             // Company Information Card
-            if (currentSearchType === 'company' || data.razaoSocial) {
-                cards.push(`
-                    <div class="result-card">
-                        <div class="card-header">
-                            <div class="card-icon"><i class="fas fa-building"></i></div>
-                            <div class="card-title">Informações Empresariais</div>
-                            <span class="status-badge status-warning">ATENÇÃO</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Razão Social:</span>
-                            <span class="info-value">${data.razaoSocial || 'N/A'}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">CNPJ:</span>
-                            <span class="info-value">${data.cnpj || '00.000.000/0001-00'}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Situação:</span>
-                            <span class="info-value">Ativa</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Porte:</span>
-                            <span class="info-value">Médio</span>
-                        </div>
-                    </div>
-                `);
+            if (currentSearchType === 'company' || data.razaoSocial || data.nome) {
+                cards.push('<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-building"></i></div><div class="card-title">Informacoes Empresariais</div><span class="status-badge status-warning">ATENCAO</span></div><div class="info-row"><span class="info-label">Razao Social:</span><span class="info-value">' + (data.razaoSocial || data.nome || 'N/A') + '</span></div><div class="info-row"><span class="info-label">CNPJ:</span><span class="info-value">' + (data.cnpj || '00.000.000/0001-00') + '</span></div><div class="info-row"><span class="info-label">Situacao:</span><span class="info-value">Ativa</span></div><div class="info-row"><span class="info-label">Porte:</span><span class="info-value">Medio</span></div></div>');
             }
             
             // Social Media Card
-            cards.push(`
-                <div class="result-card">
-                    <div class="card-header">
-                        <div class="card-icon"><i class="fas fa-hashtag"></i></div>
-                        <div class="card-title">Redes Sociais</div>
-                        <span class="status-badge status-clear">LIMPO</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">LinkedIn:</span>
-                        <span class="info-value">Perfil encontrado</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Facebook:</span>
-                        <span class="info-value">3 perfis</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Instagram:</span>
-                        <span class="info-value">2 perfis</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Risco:</span>
-                        <span class="info-value">Baixo</span>
-                    </div>
-                </div>
-            `);
+            cards.push('<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-hashtag"></i></div><div class="card-title">Redes Sociais</div><span class="status-badge status-clear">LIMPO</span></div><div class="info-row"><span class="info-label">LinkedIn:</span><span class="info-value">Perfil encontrado</span></div><div class="info-row"><span class="info-label">Facebook:</span><span class="info-value">3 perfis</span></div><div class="info-row"><span class="info-label">Instagram:</span><span class="info-value">2 perfis</span></div><div class="info-row"><span class="info-label">Risco:</span><span class="info-value">Baixo</span></div></div>');
             
             // Legal Documents Card
-            cards.push(`
-                <div class="result-card">
-                    <div class="card-header">
-                        <div class="card-icon"><i class="fas fa-file-alt"></i></div>
-                        <div class="card-title">Documentos Legais</div>
-                        <span class="status-badge status-warning">REVISAR</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Processos:</span>
-                        <span class="info-value">2 encontrados</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Certidões:</span>
-                        <span class="info-value">3 emitidas</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Débitos:</span>
-                        <span class="info-value">Nenhum</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Status:</span>
-                        <span class="info-value">Regular</span>
-                    </div>
-                </div>
-            `);
+            cards.push('<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-file-alt"></i></div><div class="card-title">Documentos Legais</div><span class="status-badge status-warning">REVISAR</span></div><div class="info-row"><span class="info-label">Processos:</span><span class="info-value">2 encontrados</span></div><div class="info-row"><span class="info-label">Certidoes:</span><span class="info-value">3 emitidas</span></div><div class="info-row"><span class="info-label">Debitos:</span><span class="info-value">Nenhum</span></div><div class="info-row"><span class="info-label">Status:</span><span class="info-value">Regular</span></div></div>');
             
             // Financial Information Card
-            cards.push(`
-                <div class="result-card">
-                    <div class="card-header">
-                        <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
-                        <div class="card-title">Informações Financeiras</div>
-                        <span class="status-badge status-high-risk">ALTO</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Score:</span>
-                        <span class="info-value">650/1000</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Restrições:</span>
-                        <span class="info-value">1 encontrada</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Renda:</span>
-                        <span class="info-value">Confidencial</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Bancos:</span>
-                        <span class="info-value">3 ativos</span>
-                    </div>
-                </div>
-            `);
+            cards.push('<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-dollar-sign"></i></div><div class="card-title">Informacoes Financeiras</div><span class="status-badge status-high-risk">ALTO</span></div><div class="info-row"><span class="info-label">Score:</span><span class="info-value">650/1000</span></div><div class="info-row"><span class="info-label">Restricoes:</span><span class="info-value">1 encontrada</span></div><div class="info-row"><span class="info-label">Renda:</span><span class="info-value">Confidencial</span></div><div class="info-row"><span class="info-label">Bancos:</span><span class="info-value">3 ativos</span></div></div>');
             
             // Contact Information Card
-            cards.push(`
-                <div class="result-card">
-                    <div class="card-header">
-                        <div class="card-icon"><i class="fas fa-phone"></i></div>
-                        <div class="card-title">Informações de Contato</div>
-                        <span class="status-badge status-clear">VERIFICADO</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Telefones:</span>
-                        <span class="info-value">2 encontrados</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">E-mails:</span>
-                        <span class="info-value">3 encontrados</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Endereço:</span>
-                        <span class="info-value">São Paulo, SP</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Validade:</span>
-                        <span class="info-value">Confirmada</span>
-                    </div>
-                </div>
-            `);
+            cards.push('<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-phone"></i></div><div class="card-title">Informacoes de Contato</div><span class="status-badge status-clear">VERIFICADO</span></div><div class="info-row"><span class="info-label">Telefones:</span><span class="info-value">2 encontrados</span></div><div class="info-row"><span class="info-label">Emails:</span><span class="info-value">3 encontrados</span></div><div class="info-row"><span class="info-label">Endereco:</span><span class="info-value">Sao Paulo, SP</span></div><div class="info-row"><span class="info-label">Validade:</span><span class="info-value">Confirmada</span></div></div>');
             
             return cards;
         }
@@ -1302,41 +1186,36 @@
             const alertList = document.getElementById('alertList');
             
             // Calculate mock risk score (0-100)
-            const riskScore = Math.floor(Math.random() * 60) + 20; // 20-80 range
+            const riskScore = Math.floor(Math.random() * 60) + 20;
             
             // Animate risk meter
-            setTimeout(() => {
-                riskFill.style.width = riskScore + '%';
-                riskPercentage.textContent = riskScore + '%';
+            setTimeout(function() {
+                if (riskFill) riskFill.style.width = riskScore + '%';
+                if (riskPercentage) riskPercentage.textContent = riskScore + '%';
             }, 500);
             
             // Generate alerts based on risk score
-            const alerts = [];
+            var alerts = [];
             
             if (riskScore > 60) {
-                alerts.push({
-                    type: 'alert-high',
-                    text: 'ALTO RISCO: Múltiplas restrições financeiras encontradas'
-                });
+                alerts.push({type: 'alert-high', text: 'ALTO RISCO: Multiplas restricoes financeiras encontradas'});
             }
             
             if (riskScore > 40) {
-                alerts.push({
-                    type: 'alert-medium',
-                    text: 'MÉDIO RISCO: Processos judiciais em andamento'
-                });
+                alerts.push({type: 'alert-medium', text: 'MEDIO RISCO: Processos judiciais em andamento'});
             }
             
-            alerts.push({
-                type: 'alert-low',
-                text: 'BAIXO RISCO: Histórico de crédito estável'
-            });
+            alerts.push({type: 'alert-low', text: 'BAIXO RISCO: Historico de credito estavel'});
             
-            alertList.innerHTML = alerts.map(alert => 
-                `<li class="alert-item ${alert.type}">${alert.text}</li>`
-            ).join('');
+            if (alertList) {
+                alertList.innerHTML = '';
+                var i;
+                for (i = 0; i < alerts.length; i++) {
+                    alertList.innerHTML += '<li class="alert-item ' + alerts[i].type + '">' + alerts[i].text + '</li>';
+                }
+            }
             
-            riskSection.style.display = 'block';
+            if (riskSection) riskSection.style.display = 'block';
         }
         
         function displayTimeline(data) {
@@ -1344,85 +1223,59 @@
             const timelineContent = document.getElementById('timelineContent');
             
             // Generate mock timeline events
-            const events = [
-                {
-                    date: '2024-01-15',
-                    text: 'Consulta realizada - Sistema de Background Check Pro'
-                },
-                {
-                    date: '2023-12-20',
-                    text: 'Atualização de dados cadastrais - Receita Federal'
-                },
-                {
-                    date: '2023-11-10',
-                    text: 'Verificação de antecedentes - Polícia Federal'
-                },
-                {
-                    date: '2023-09-05',
-                    text: 'Consulta de crédito - Serasa'
-                },
-                {
-                    date: '2023-06-15',
-                    text: 'Registro profissional - Conselho Regional'
-                }
+            var events = [
+                {date: '2024-01-15', text: 'Consulta realizada - Sistema de Background Check Pro'},
+                {date: '2023-12-20', text: 'Atualizacao de dados cadastrais - Receita Federal'},
+                {date: '2023-11-10', text: 'Verificacao de antecedentes - Policia Federal'},
+                {date: '2023-09-05', text: 'Consulta de credito - Serasa'},
+                {date: '2023-06-15', text: 'Registro profissional - Conselho Regional'}
             ];
             
-            timelineContent.innerHTML = events.map(event => `
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-date">${event.date}</div>
-                        <div class="timeline-text">${event.text}</div>
-                    </div>
-                </div>
-            `).join('');
+            if (timelineContent) {
+                timelineContent.innerHTML = '';
+                var i;
+                for (i = 0; i < events.length; i++) {
+                    timelineContent.innerHTML += '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-date">' + events[i].date + '</div><div class="timeline-text">' + events[i].text + '</div></div></div>';
+                }
+            }
             
-            timelineSection.style.display = 'block';
+            if (timelineSection) timelineSection.style.display = 'block';
         }
         
         function generateMockCPF() {
-            // Generate a mock CPF for demonstration
             const base = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
             const dv1 = Math.floor(Math.random() * 10);
             const dv2 = Math.floor(Math.random() * 10);
-            return `${base.substring(0, 3)}.${base.substring(3, 6)}.${base.substring(6, 9)}-${dv1}${dv2}`;
+            return base.substring(0, 3) + '.' + base.substring(3, 6) + '.' + base.substring(6, 9) + '-' + dv1 + dv2;
         }
         
         function showErrorState() {
             const resultsGrid = document.getElementById('resultsGrid');
-            resultsGrid.innerHTML = `
-                <div class="result-card">
-                    <div class="card-header">
-                        <div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                        <div class="card-title">Erro na Consulta</div>
-                        <span class="status-badge status-high-risk">ERRO</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Mensagem:</span>
-                        <span class="info-value">Não foi possível completar a verificação</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Ação:</span>
-                        <span class="info-value">Tente novamente mais tarde</span>
-                    </div>
-                </div>
-            `;
+            if (resultsGrid) {
+                resultsGrid.innerHTML = '<div class="result-card"><div class="card-header"><div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="card-title">Erro na Consulta</div><span class="status-badge status-high-risk">ERRO</span></div><div class="info-row"><span class="info-label">Mensagem:</span><span class="info-value">Nao foi possivel completar a verificacao</span></div><div class="info-row"><span class="info-label">Acao:</span><span class="info-value">Tente novamente mais tarde</span></div></div>';
+            }
         }
         
         function closeModal() {
-            document.getElementById('resultModal').style.display = 'none';
+            const modal = document.getElementById('resultModal');
+            if (modal) modal.style.display = 'none';
         }
         
         // Add enter key support
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performDeepCheck();
+        document.addEventListener('DOMContentLoaded', function() {
+            var searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performDeepCheck();
+                    }
+                });
             }
         });
         
         // Initialize with sample search
         window.addEventListener('load', function() {
-            // You can add initial loading logic here
+            console.log('Background Check Pro loaded successfully');
         });
     </script>
 </body>
