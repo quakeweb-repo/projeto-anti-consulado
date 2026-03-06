@@ -10,6 +10,15 @@ Sistema profissional para agentes de modernização predial da Prefeitura de Sã
 - **Oportunidades de Modernização**: Sugestões focadas em segurança predial.
 - **Dados Geográficos**: Integração com GEOSAMPA para riscos e edificações.
 - **Scraping Legal**: Extração de conteúdo de sites oficiais.
+- **Mineração On-Demand**: A interface usa seis caixas principais que agrupam um conjunto de webservices/OSINT Brazuca:
+  1. **Infraestrutura** – GeoSampa, Prefeitura, cadastro imobiliário;
+  2. **Redes Sociais** – Twitter, Facebook, Instagram (coletados pelo OSINT Brazuca);
+  3. **Busca Web** – Google, YouTube, notícias;
+  4. **Documentos** – SEI, AVCB, licenças;
+  5. **Fiscal/Tributos** – CNPJ, IPTU, regime diplomático;
+  6. **Segurança** – saídas de incêndio, riscos geológicos.
+
+  Cada caixa dispara `fetch('/api/osint/<categoria>?live=1')` para o servidor hospedado na codespace. O backend agrega diversas fontes (Twitter, Google, GeoSampa, Prefeitura) e devolve os dados agrupados por origem.
 - **Exportação de Relatórios**: Geração de JSON para registros oficiais.
 
 ## Acesso Autorizado

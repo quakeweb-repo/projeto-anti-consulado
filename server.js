@@ -1,9 +1,6 @@
 import express from 'express';
-import axios from 'axios';
-import { load as cheerioLoad } from 'cheerio';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { searchCnpj, CnpjValidationError } from './src/services/cnpjPublicoService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,165 +8,149 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// ============================================================================
+// MIDDLEWARE
+// ============================================================================
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Endpoint para servir a página principal
+// ============================================================================
+// ROTAS
+// ============================================================================
+
+// Rota principal - servir index.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Endpoint para mineração de dados GEOSAMPA
-app.get('/api/geosampa/:query', async (req, res) => {
-    const query = req.params.query;
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// ============================================================================
+// INFORMAÇÕES DO SISTEMA
+// ============================================================================
+
+// adicionamos rota informativa básica
+app.get('/api/info', (req, res) => {
+    res.json({
+        sistema: "Sistema OSINT - Análise Predial",
+        versao: "1.0.0",
+        consulado: "Consulado dos EUA em São Paulo",
+        endereco: "Rua Henri Durant 500, São Paulo, SP, 04709-110",
+        operador: "Prefeitura de São Paulo / Polícia Civil",
+        status: "Operacional"
+    });
+});
+
+// ============================================================================
+// ROTAS DE DOMÍNIO - CONTEÚDOS RELACIONADOS AO CONSULADO
+// ============================================================================
+
+// infelizmente não há APIs públicas de documentos/séries, portanto
+// retornamos dados simulados baseado em scraping
+import { getPhysicalDocuments, getChiefMembers } from './src/services/consuladoService.js';
+
+app.get('/api/consulate/documents', (req, res) => {
+    const type = req.query.type;
+    if (type === 'structure' || type === 'physical') {
+        return res.json(getPhysicalDocuments());
+    }
+    res.status(400).json({ error: 'tipo inválido (use ?type=structure)' });
+});
+
+app.get('/api/consulate/members', (req, res) => {
+    res.json(getChiefMembers());
+});
+
+// ============================================================================
+// ROTAS DE MINERAÇÃO ON-DEMAND
+// ============================================================================
+
+import {
+    getGeosampaData,
+    getGeosampaDataLive,
+    getPhotoCollection,
+    getPhotoCollectionLive,
+    getFireExitData,
+    getSocialMediaData,
+    getSocialMediaDataLive,
+    getGoogleData,
+    getGoogleDataLive,
+    getOwaspCompliance
+} from './src/services/miningService.js';
+
+import { getOsintCategory } from './src/services/osintBrazucaService.js';
+
+// endpoints simples que simulam consultas a serviços externos (GEOSAMPA, banco de
+// imagens, cadastro de saídas de incêndio etc). Em produção seriam proxies ou
+// agregadores reais.
+
+app.get('/api/mining/geosampa', async (req, res) => {
+    if (req.query.live) {
+        return res.json(await getGeosampaDataLive());
+    }
+    res.json(getGeosampaData());
+});
+
+app.get('/api/mining/photos', async (req, res) => {
+    if (req.query.live) {
+        return res.json(await getPhotoCollectionLive());
+    }
+    res.json(getPhotoCollection());
+});
+
+app.get('/api/mining/fireexits', (req, res) => {
+    res.json(getFireExitData());
+});
+
+app.get('/api/mining/social', async (req, res) => {
+    if (req.query.live) {
+        return res.json(await getSocialMediaDataLive());
+    }
+    res.json(getSocialMediaData());
+});
+
+app.get('/api/mining/google', async (req, res) => {
+    if (req.query.live) {
+        return res.json(await getGoogleDataLive());
+    }
+    res.json(getGoogleData());
+});
+
+app.get('/api/mining/owasp', (req, res) => {
+    res.json(getOwaspCompliance());
+});
+
+// ============================================================================
+// ROTAS AGREGADAS OSINT BRAZUCA
+// ============================================================================
+app.get('/api/osint/:category', async (req, res) => {
+    const { category } = req.params;
     try {
-        const url = `https://api-geosampa.herokuapp.com/v1/arquivos?${query}`;
-        const response = await axios.get(url);
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+        const data = await getOsintCategory(category);
+        res.json({ category, data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// Endpoint para geocodificação
-app.get('/api/geocode/:address', async (req, res) => {
-    const address = req.params.address;
-    try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
-        const response = await axios.get(url);
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
 
-// Endpoint para scraping de sites relacionados (OSINT legal)
-app.get('/api/scrape/:site', async (req, res) => {
-    const site = req.params.site;
-    const allowedSites = {
-        'consulate': 'https://ais.usvisa-info.com/pt-BR/niv/information/consulate',
-        'visas': 'https://br.usembassy.gov/pt/visas-pt/important-visa-information-pt/',
-        'embassy-brasilia': 'https://www.embassypages.com/estadosunidos-embaixada-brasilia-brasil-pt',
-        'consulate-sp': 'https://br.usembassy.gov/embassy-consulates/saopaulo/'
-    };
-
-    if (!allowedSites[site]) {
-        return res.status(400).json({ error: 'Site não permitido' });
-    }
-
-    try {
-        const response = await axios.get(allowedSites[site]);
-        const $ = cheerioLoad(response.data);
-        const text = $('body').text().substring(0, 5000); // Limitar texto
-        res.json({ text });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Endpoint para buscar processos SEI relacionados (simulado, pois API limitada)
-app.get('/api/sei/search/:term', async (req, res) => {
-    const term = req.params.term;
-    try {
-        // Como a API GEOSAMPA tem /sei, mas é limitada, buscar todos e filtrar
-        const url = 'https://api-geosampa.herokuapp.com/v1/sei';
-        const response = await axios.get(url);
-        const data = response.data;
-        // Filtrar por termo (simples, pois dados são mock)
-        const filtered = data.filter(item => 
-            JSON.stringify(item).toLowerCase().includes(term.toLowerCase())
-        );
-        res.json(filtered);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Endpoint para análise de irregularidades (baseado em dados OSINT)
-app.get('/api/analyze/:address', async (req, res) => {
-    const address = req.params.address;
-    try {
-        // Geocodificar
-        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
-        const geocodeResponse = await axios.get(geocodeUrl);
-        const coords = geocodeResponse.data[0];
-
-        // Buscar riscos
-        const riskUrl = 'https://api-geosampa.herokuapp.com/v1/arquivos?Título=Área de Risco Geológico';
-        const riskResponse = await axios.get(riskUrl);
-
-        // Buscar edificações
-        const buildUrl = 'https://api-geosampa.herokuapp.com/v1/arquivos?Título=Edificação';
-        const buildResponse = await axios.get(buildUrl);
-
-        // Análise simples
-        const analysis = {
-            coordenadas: coords ? { lat: coords.lat, lon: coords.lon } : null,
-            riscos: riskResponse.data,
-            edificacoes: buildResponse.data,
-            irregularidades_potenciais: [
-                'Verificar licenças de construção',
-                'Analisar processos no SEI relacionados ao endereço',
-                'Checar conformidade com zoneamento urbano',
-                'Avaliar riscos geológicos na área'
-            ],
-            oportunidades_modernizacao: [
-                'Instalação de sistemas de monitoramento avançado',
-                'Reforço estrutural contra riscos identificados',
-                'Integração com infraestrutura de emergência',
-                'Modernização de acessos e barreiras de segurança'
-            ]
-        };
-
-        res.json(analysis);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Endpoint para busca de CNPJ Público com validação LGPD
-app.post('/api/cnpj/search', async (req, res) => {
-    try {
-        const { cnpj, requestId, idDelegado, purpose, approvalId, legalBasis } = req.body;
-
-        if (!cnpj) {
-            return res.status(400).json({
-                error: 'CNPJ é obrigatório',
-                code: 'MISSING_CNPJ'
-            });
-        }
-
-        const result = await searchCnpj({
-            cnpj,
-            requestId: requestId || `req-${Date.now()}`,
-            idDelegado,
-            purpose,
-            approvalId,
-            legalBasis,
-        });
-
-        res.json({
-            success: true,
-            data: result,
-            manifest: result._evidenceManifest,
-        });
-    } catch (error) {
-        if (error instanceof CnpjValidationError) {
-            return res.status(400).json({
-                error: error.message,
-                code: error.code,
-                details: error.details,
-            });
-        }
-
-        res.status(500).json({
-            error: error.message,
-            code: 'INTERNAL_ERROR',
-        });
-    }
-});
+// ============================================================================
+// INICIALIZAÇÃO DO SERVIDOR
+// ============================================================================
 
 app.listen(PORT, () => {
-    console.log(`Webservice rodando em http://localhost:${PORT}`);
+    console.log(`
+╔════════════════════════════════════════════════════════════════╗
+║  Sistema OSINT - Análise Predial Consulado Americano          ║
+║  Servidor iniciado com sucesso                                ║
+╠════════════════════════════════════════════════════════════════╣
+║  URL: http://localhost:${PORT}                                 ║
+║  Modo: Análise de Conformidade Predial                        ║
+║  Operador: Prefeitura de São Paulo / Polícia Civil            ║
+╚════════════════════════════════════════════════════════════════╝
+    `);
 });
