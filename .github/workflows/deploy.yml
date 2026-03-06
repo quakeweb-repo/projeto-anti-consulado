@@ -22,6 +22,8 @@ jobs:
           git config --local user.name "GitHub Action"
           git checkout --orphan gh-pages
           rm -rf .github node_modules package*.json README.md server.js
+          mv public/* .
+          rmdir public
           git add .
           git commit -m "Deploy to GitHub Pages" || echo "No changes to commit"
           git push origin gh-pages --force
