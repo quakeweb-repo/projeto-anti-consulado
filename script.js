@@ -52,6 +52,7 @@ function setupEventListeners() {
         }
         var searchInput = document.getElementById('searchInput');
         if (searchInput) {
+            searchInput.removeAttribute('onclick');
             searchInput.addEventListener('input', handleRealTimeAnalysis);
         }
         var typeBtns = document.querySelectorAll('.type-btn');
