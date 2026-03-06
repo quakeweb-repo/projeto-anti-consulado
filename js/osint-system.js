@@ -1,6 +1,7 @@
 // ============================================
 // BACKGROUND CHECK PRO - OSINT SYSTEM v3.0
 // Clean, Powerful, No Errors
+// PRIMARY DEPLOYMENT: NETLIFY
 // ============================================
 
 var BCP = (function() {
@@ -9,18 +10,26 @@ var BCP = (function() {
     var currentSearchType = 'person';
     var isSearching = false;
     
-    // Environment detection
-    var isNetlify = window.location.hostname.includes('netlify.app');
-    var isGitHubPages = window.location.hostname.includes('github.io');
-    var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    // Environment detection - NETLIFY FIRST
+    var hostname = window.location.hostname;
+    var isNetlify = hostname.includes('netlify.app');
+    var isGitHubPages = hostname.includes('github.io');
+    var isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
     
-    console.log('BCP OSINT System v3.0 loaded');
-    console.log('Environment:', isNetlify ? 'Netlify' : (isGitHubPages ? 'GitHub Pages' : 'Localhost'));
+    console.log('========================================');
+    console.log('BCP OSINT System v3.0');
+    console.log('Platform: ' + (isNetlify ? 'NETLIFY (Primary)' : (isGitHubPages ? 'GitHub Pages' : 'Localhost')));
+    console.log('URL: ' + window.location.href);
+    console.log('========================================');
     
     function getAPIBase() {
-        if (isLocalhost) return '/.netlify/functions';
-        if (isNetlify) return '/.netlify/functions';
-        return 'https://glittering-sundae-4fba50.netlify.app/.netlify/functions';
+        if (isNetlify) {
+            return '/.netlify/functions';
+        } else if (isLocalhost) {
+            return '/.netlify/functions';
+        } else {
+            return 'https://glittering-sundae-4fba50.netlify.app/.netlify/functions';
+        }
     }
     
     function setSearchType(type) {
