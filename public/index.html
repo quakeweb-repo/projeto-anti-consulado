@@ -3,34 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSINT - Consulado Norte-Americano São Paulo</title>
+    <title>Sistema OSINT - Análise Predial Consulado EUA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        .section { margin-bottom: 20px; }
-        .data { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+        body { background-color: #f8f9fa; }
+        .header { background: linear-gradient(90deg, #007bff, #0056b3); color: white; padding: 20px 0; }
+        .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-primary { background-color: #007bff; border-color: #007bff; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .alert { border-radius: 0; }
+        .footer { background-color: #343a40; color: white; text-align: center; padding: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>Análise OSINT - Edifício do Consulado Norte-Americano</h1>
-    <p>Endereço: Rua Henri Dunant 500, São Paulo, SP, 04709-110</p>
-    <p>Distância: 24 km</p>
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-building"></i> Sistema OSINT - Análise Predial</h1>
+                    <p class="mb-0">Consulado Norte-Americano - Rua Henri Dunant 500, São Paulo, SP</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small>Distância: 24 km | Delegado: [Nome]</small>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <div class="section">
-        <h2>Dados Geográficos via GEOSAMPA</h2>
-        <div id="geosampa-data" class="data">Carregando...</div>
+    <div class="container mt-4">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> <strong>Acesso Autorizado:</strong> Sistema para agentes de modernização predial da Prefeitura de São Paulo e órgãos da Polícia Civil. Todas as buscas são baseadas em fontes abertas (OSINT) e legais.
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5><i class="fas fa-search"></i> Busca On Demand</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="address-input" class="form-label">Endereço:</label>
+                                <input type="text" class="form-control" id="address-input" value="Rua Henri Dunant 500, São Paulo, SP, 04709-110">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="term-input" class="form-label">Termo de Busca SEI:</label>
+                                <input type="text" class="form-control" id="term-input" placeholder="Ex: consulado, edificação">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-primary me-2" onclick="loadAnalysis()"><i class="fas fa-sync"></i> Analisar</button>
+                            <button class="btn btn-secondary me-2" onclick="searchSEI()"><i class="fas fa-file-alt"></i> Buscar SEI</button>
+                            <button class="btn btn-success" onclick="exportReport()"><i class="fas fa-download"></i> Exportar Relatório</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Irregularidades Identificadas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="irregularities-list">
+                            <p class="text-muted">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5><i class="fas fa-tools"></i> Oportunidades de Modernização</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="opportunities-list">
+                            <p class="text-muted">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5><i class="fas fa-map-marked-alt"></i> Dados Geográficos e Riscos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="geo-data">
+                            <p class="text-muted">Carregando dados do GEOSAMPA...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5><i class="fas fa-shield-alt"></i> Informações de Segurança e Fontes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Fontes Oficiais:</h6>
+                                <ul class="list-group">
+                                    <li class="list-group-item"><a href="#" onclick="scrapeSite('consulate')">Informações do Consulado</a></li>
+                                    <li class="list-group-item"><a href="#" onclick="scrapeSite('visas')">Informações de Vistos</a></li>
+                                    <li class="list-group-item"><a href="#" onclick="scrapeSite('embassy-brasilia')">Embaixada em Brasília</a></li>
+                                    <li class="list-group-item"><a href="#" onclick="scrapeSite('consulate-sp')">Consulado em São Paulo</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Conteúdo Extraído:</h6>
+                                <div id="scraped-content" class="border p-2" style="max-height: 200px; overflow-y: auto;">
+                                    <p class="text-muted">Selecione uma fonte para visualizar conteúdo OSINT.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>Informações de Segurança e Vistos</h2>
-        <div id="security-data" class="data">Carregando...</div>
-    </div>
+    <footer class="footer">
+        <p>&copy; 2026 Sistema OSINT - Prefeitura de São Paulo / Polícia Civil. Uso exclusivo para modernização predial e segurança pública.</p>
+    </footer>
 
-    <div class="section">
-        <h2>Oportunidades de Modernização de Segurança</h2>
-        <div id="modernization-data" class="data">Analisando...</div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html></content>

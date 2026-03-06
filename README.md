@@ -1,42 +1,35 @@
-# Webservice Minerador OSINT - Análise do Edifício do Consulado Norte-Americano em São Paulo
+# Sistema OSINT - Análise Predial Consulado EUA
 
-Este é um webservice minerador on demand que realiza buscas automáticas de informações OSINT (Open Source Intelligence) sobre o edifício do consulado norte-americano localizado na Rua Henri Dunant 500, São Paulo, SP, 04709-110. O foco é identificar irregularidades na documentação de registros relacionados, de forma 100% legal, e extrair informações para acesso democrático por modernizadores prediais.
+Sistema profissional para agentes de modernização predial da Prefeitura de São Paulo e órgãos da Polícia Civil. Realiza mineração on demand de informações OSINT legais sobre o edifício do consulado norte-americano, identificando irregularidades em registros e oportunidades de modernização radical para segurança.
 
 ## Funcionalidades
 
-- **Mineração On Demand**: Endpoints para buscar dados geográficos, processos SEI, scraping de sites oficiais e análise de irregularidades.
-- **Integração com GEOSAMPA**: Acesso a dados abertos da prefeitura de São Paulo sobre edificações, riscos geológicos e infraestrutura.
-- **Geocodificação**: Obtenção de coordenadas via Nominatim (OpenStreetMap).
-- **Scraping Legal**: Extração de texto de sites públicos relacionados ao consulado.
-- **Análise de Irregularidades**: Identificação de potenciais problemas em registros, licenças e conformidade urbana.
-- **Oportunidades de Modernização**: Sugestões radicais para melhoria da segurança predial baseada em dados OSINT.
+- **Interface Profissional**: UI sólida com Bootstrap, ícones e layout responsivo para uso oficial.
+- **Busca On Demand**: Campos para endereço e termos SEI, com botões para análise, busca e exportação.
+- **Irregularidades Identificadas**: Lista de potenciais problemas em documentação e conformidade.
+- **Oportunidades de Modernização**: Sugestões focadas em segurança predial.
+- **Dados Geográficos**: Integração com GEOSAMPA para riscos e edificações.
+- **Scraping Legal**: Extração de conteúdo de sites oficiais.
+- **Exportação de Relatórios**: Geração de JSON para registros oficiais.
+
+## Acesso Autorizado
+
+Exclusivo para delegados e agentes autorizados. Todas as operações são baseadas em fontes abertas e legais, promovendo transparência democrática.
 
 ## Como Usar
 
-1. Instale as dependências: `npm install`
-2. Execute o servidor: `npm start`
-3. Acesse `http://localhost:3000` para a interface web.
-4. Use os botões para mineração on demand.
-
-## Endpoints da API
-
-- `GET /api/geosampa/:query` - Buscar dados no GEOSAMPA (ex: `Título=Edificação`)
-- `GET /api/geocode/:address` - Geocodificar endereço
-- `GET /api/scrape/:site` - Scraping de sites (consulate, visas, embassy-brasilia, consulate-sp)
-- `GET /api/sei/search/:term` - Buscar processos SEI relacionados
-- `GET /api/analyze/:address` - Análise completa de irregularidades e oportunidades
+1. Execute o servidor: `npm start`
+2. Acesse `http://localhost:3000`
+3. Insira endereço e termos, clique em "Analisar"
+4. Use "Buscar SEI" para processos relacionados
+5. Exporte relatórios para documentação
 
 ## Tecnologias
 
-- Node.js / Express
-- Axios para requisições HTTP
-- Cheerio para scraping
-- HTML/CSS/JavaScript para frontend
+- Backend: Node.js / Express
+- Frontend: Bootstrap 5, Font Awesome
+- APIs: GEOSAMPA, Nominatim, Scraping com Cheerio
 
 ## Publicação
 
-Para publicar, hospede o backend em um serviço como Heroku, Vercel ou Railway. Para o frontend, use GitHub Pages ou similar. Atualize as URLs no script.js conforme necessário.
-
-## Aviso Legal
-
-Todas as buscas são realizadas usando fontes públicas e abertas (OSINT), sem violação de privacidade ou leis. O objetivo é promover transparência e modernização democrática.
+Hospede o backend em Heroku/Vercel. Para frontend, use GitHub Pages. Adicione autenticação se necessário para acesso controlado.
