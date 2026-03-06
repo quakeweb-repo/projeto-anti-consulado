@@ -4,24 +4,8 @@
 // Civil Registry ML Analysis
 // ============================================================================
 
-// Import Civil Registry Service (loaded via script tag)
-let CivilRegistryService = null;
-let MLAnalysisService = null;
-
-// Load services dynamically
-function loadCivilRegistryServices() {
-    try {
-        // Services are loaded via script tags in HTML
-        if (typeof window.CivilRegistryService !== 'undefined') {
-            CivilRegistryService = window.CivilRegistryService;
-        }
-        if (typeof window.MLAnalysisService !== 'undefined') {
-            MLAnalysisService = window.MLAnalysisService;
-        }
-    } catch (error) {
-        console.warn('Failed to load Civil Registry services:', error);
-    }
-}
+// Services are loaded via script tags in HTML
+// CivilRegistryService and MLAnalysisService are available from window scope
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeBackgroundCheckPro();
@@ -31,12 +15,11 @@ function initializeBackgroundCheckPro() {
     try {
         setupEventListeners();
         loadSavedData();
-        loadCivilRegistryServices();
         initializeUI();
         console.log('Background Check Pro initialized successfully');
     } catch (error) {
         console.error('Error initializing Background Check Pro:', error);
-        showError('Erro ao inicializar o sistema. Por favor, recarregue a página.');
+        showError('Erro ao inicializar o sistema. Por favor, recarregue a pagina.');
     }
 }
 
@@ -1546,12 +1529,12 @@ async function searchCivilRegistry(query, page = 1, limit = 20) {
         showLoadingState();
         
         // Initialize Civil Registry Service with fallback
-        let civilService;
+        var civilService;
         try {
-            if (CivilRegistryService) {
-                civilService = new CivilRegistryService();
+            if (window.CivilRegistryService) {
+                civilService = new window.CivilRegistryService();
             } else {
-                console.warn('Civil Registry Service not available, using fallback');
+                console.warn('Civil Registry Service not available');
                 return await getMockCivilRegistryData(query, page, limit);
             }
         } catch (serviceError) {
@@ -1639,11 +1622,11 @@ async function getRealCivilRegistryData(query, page = 1, limit = 20) {
 
 async function trainCivilRegistryModel(trainingData) {
     try {
-        const civilService = new CivilRegistryService();
-        const result = await civilService.trainModel('civilRisk', trainingData);
+        var civilService = new window.CivilRegistryService();
+        var result = await civilService.trainModel('civilRisk', trainingData);
         
         if (result.success) {
-            console.log('✅ Civil Registry ML model trained successfully');
+            console.log('Civil Registry ML model trained successfully');
         }
         
         return result;
@@ -1658,9 +1641,9 @@ async function trainCivilRegistryModel(trainingData) {
 
 async function analyzeWithCivilML(data) {
     try {
-        const civilService = new CivilRegistryService();
-        const features = civilService.extractFeatures(data);
-        const prediction = await civilService.predict('civilRisk', features);
+        var civilService = new window.CivilRegistryService();
+        var features = civilService.extractFeatures(data);
+        var prediction = await civilService.predict('civilRisk', features);
         
         return {
             success: true,
@@ -1681,9 +1664,9 @@ async function analyzeWithCivilML(data) {
             success: false,
             error: error.message,
             fallback: {
-                riskLevel: 'Médio',
+                riskLevel: 'Medio',
                 confidence: 0.6,
-                recommendation: 'Verificação manual recomendada'
+                recommendation: 'Verificacao manual recomendada'
             }
         };
     }

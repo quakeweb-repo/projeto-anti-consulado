@@ -24,8 +24,28 @@ class LiveMiningManager {
     init() {
         this.setupEventListeners();
         this.setupWebSocketListeners();
-        this.initializeProgressIndicators();
         this.setupAutoRefresh();
+        console.log('LiveMiningManager initialized');
+    }
+
+    // ============================================================================
+    // PROGRESS INDICATORS
+    // ============================================================================
+
+    initializeProgressIndicators() {
+        // Initialize progress indicators if they exist
+        var progressElements = document.querySelectorAll('.progress');
+        var i;
+        for (i = 0; i < progressElements.length; i++) {
+            progressElements[i].style.width = '0%';
+        }
+    }
+
+    updateProgressIndicator(elementId, percentage) {
+        var element = document.getElementById(elementId);
+        if (element) {
+            element.style.width = percentage + '%';
+        }
     }
 
     // ============================================================================
