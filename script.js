@@ -1,16 +1,18 @@
 // ============================================================================
 // BACKGROUND CHECK PRO - Professional Verification System
-// GitHub Pages Frontend → Netlify Backend Architecture
+// Netlify Full-Stack Deployment (No GitHub Pages Limitations)
 // ============================================================================
 
 // Configuration for Netlify Backend
 var CONFIG = {
-    // Netlify site URL
+    // PRIMARY: Netlify site URL (full functionality including WebSocket)
     netlifyUrl: 'https://glittering-sundae-4fba50.netlify.app',
-    // GitHub Pages URL
+    // Fallback: GitHub Pages URL
     githubPagesUrl: 'https://quakeweb-repo.github.io/projeto-anti-consulado',
-    // API Base URL - Always points to Netlify
-    apiBase: 'https://glittering-sundae-4fba50.netlify.app/.netlify/functions',
+    // API Base URL - Points to Netlify Functions
+    apiBase: '/.netlify/functions',
+    // WebSocket URL for real-time updates
+    webSocketUrl: 'wss://glittering-sundae-4fba50.netlify.app/.netlify/functions/ws',
     // Environment detection
     isNetlify: window.location.hostname.includes('netlify.app'),
     isGitHubPages: window.location.hostname.includes('github.io'),
@@ -20,11 +22,14 @@ var CONFIG = {
 // Auto-detect correct API URL
 if (CONFIG.isLocalhost) {
     CONFIG.apiBase = '/.netlify/functions';
+    CONFIG.webSocketUrl = 'ws://localhost:8888/.netlify/functions/ws';
 } else if (CONFIG.isNetlify) {
     CONFIG.apiBase = '/.netlify/functions';
+    CONFIG.webSocketUrl = 'wss://' + window.location.host + '/.netlify/functions/ws';
 } else {
-    // GitHub Pages - Always use Netlify API
+    // GitHub Pages fallback - use Netlify API
     CONFIG.apiBase = 'https://glittering-sundae-4fba50.netlify.app/.netlify/functions';
+    CONFIG.webSocketUrl = 'wss://glittering-sundae-4fba50.netlify.app/.netlify/functions/ws';
 }
 
 // Log environment info

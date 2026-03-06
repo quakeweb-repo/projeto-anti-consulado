@@ -99,8 +99,8 @@ class LiveMiningManager {
 
     setupWebSocketListeners() {
         // WebSocket connection for real-time mining updates
-        // Skip WebSocket on GitHub Pages (static hosting)
-        if (!this.isGitHubPages) {
+        // ENABLED on Netlify - full real-time functionality
+        if (!CONFIG.isGitHubPages) {
             this.connectWebSocket();
         } else {
             console.log('GitHub Pages detected - using polling instead of WebSocket');
