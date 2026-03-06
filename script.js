@@ -1,7 +1,27 @@
 // ============================================================================
 // BACKGROUND CHECK PRO - Professional Verification System
 // Real-time data mining with Portal da Transparência integration
+// Civil Registry ML Analysis
 // ============================================================================
+
+// Import Civil Registry Service (loaded via script tag)
+let CivilRegistryService = null;
+let MLAnalysisService = null;
+
+// Load services dynamically
+function loadCivilRegistryServices() {
+    try {
+        // Services are loaded via script tags in HTML
+        if (typeof window.CivilRegistryService !== 'undefined') {
+            CivilRegistryService = window.CivilRegistryService;
+        }
+        if (typeof window.MLAnalysisService !== 'undefined') {
+            MLAnalysisService = window.MLAnalysisService;
+        }
+    } catch (error) {
+        console.warn('Failed to load Civil Registry services:', error);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeBackgroundCheckPro();
@@ -11,6 +31,7 @@ function initializeBackgroundCheckPro() {
     try {
         setupEventListeners();
         loadSavedData();
+        loadCivilRegistryServices();
         initializeUI();
         console.log('Background Check Pro initialized successfully');
     } catch (error) {
@@ -75,7 +96,7 @@ async function handleSearch(event) {
         
         switch (searchType) {
             case 'pessoa':
-                results = await searchPerson(query);
+                results = await searchPersonWithCivilRegistry(query);
                 break;
             case 'cpf':
                 results = await searchByCPF(query);
@@ -96,7 +117,7 @@ async function handleSearch(event) {
                 results = await searchEmail(query);
                 break;
             default:
-                results = await searchPerson(query);
+                results = await searchPersonWithCivilRegistry(query);
         }
         
         displayResults(results, searchType, query);
@@ -648,7 +669,84 @@ function displayDetailedResults(results, searchType) {
         
         let html = '';
         
-        if (results.personal) {
+        // Civil Registry Results
+        if (results.personal && results.personal.civilRegistry) {
+            const civilData = results.personal.civilRegistry;
+            html += `
+                <div class="result-card">
+                    <h3><i class="fas fa-id-card"></i> 📋 Registro Civil</h3>
+                    <div class="card-content">
+                        <p><strong>Nome:</strong> ${civilData.nome || 'N/A'}</p>
+                        <p><strong>CPF:</strong> ${civilData.cpf || 'N/A'}</p>
+                        <p><strong>Data Nascimento:</strong> ${civilData.dataNascimento || 'N/A'}</p>
+                        <p><strong>Naturalidade:</strong> ${civilData.naturalidade || 'N/A'}</p>
+                        <p><strong>Estado Civil:</strong> ${civilData.estadoCivil || 'N/A'}</p>
+                        <p><strong>Fonte:</strong> <span class="source-badge">${civilData.fonte || 'N/A'}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ML Analysis Results
+        if (results.mlAnalysis) {
+            const mlData = results.mlAnalysis;
+            html += `
+                <div class="result-card">
+                    <h3><i class="fas fa-brain"></i> 🧠 Análise ML</h3>
+                    <div class="card-content">
+                        <p><strong>Nível de Risco:</strong> <span class="risk-${mlData.riskLevel?.toLowerCase() || 'medio'}">${mlData.riskLevel || 'N/A'}</span></p>
+                        <p><strong>Score ML:</strong> ${mlData.mlScore || 'N/A'}</p>
+                        <p><strong>Confiança:</strong> ${mlData.confidence || 'N/A'}%</p>
+                        <p><strong>Recomendações:</strong></p>
+                        <ul>
+                            ${(mlData.recommendations || []).map(rec => `
+                                <li><em>${rec.priority}:</em> ${rec.action}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Civil Documents
+        if (results.documents && results.documents.civilDocuments) {
+            const civilDocs = results.documents.civilDocuments;
+            html += `
+                <div class="result-card">
+                    <h3><i class="fas fa-file-contract"></i> 📄 Documentos Civis</h3>
+                    <div class="card-content">
+                        ${civilDocs.map(doc => `
+                            <div class="document-item">
+                                <p><strong>${doc.type}:</strong> ${doc.number || 'N/A'}</p>
+                                <p><strong>Validade:</strong> ${doc.validity || 'N/A'}</p>
+                                <p><strong>Emissor:</strong> ${doc.issuer || 'N/A'}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Relationships Analysis
+        if (results.riskAssessment && results.riskAssessment.relationships) {
+            const relationships = results.riskAssessment.relationships;
+            html += `
+                <div class="result-card">
+                    <h3><i class="fas fa-users"></i> 👥 Relacionamentos</h3>
+                    <div class="card-content">
+                        ${relationships.map(rel => `
+                            <div class="relationship-item">
+                                <p><strong>${rel.type}:</strong> ${rel.name || 'N/A'}</p>
+                                <p><strong>Confiança:</strong> ${rel.confidence || 'N/A'}%</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Standard Personal Information
+        if (results.personal && !results.personal.civilRegistry) {
             html += `
                 <div class="result-card">
                     <h3><i class="fas fa-user"></i> Informações Pessoais</h3>
@@ -662,6 +760,7 @@ function displayDetailedResults(results, searchType) {
             `;
         }
         
+        // Social Media Results
         if (results.social) {
             html += `
                 <div class="result-card">
@@ -680,6 +779,7 @@ function displayDetailedResults(results, searchType) {
             `;
         }
         
+        // Instagram Analysis
         if (results.instagram) {
             html += `
                 <div class="result-card">
@@ -694,6 +794,7 @@ function displayDetailedResults(results, searchType) {
             `;
         }
         
+        // Financial Information
         if (results.financial) {
             html += `
                 <div class="result-card">
@@ -1549,6 +1650,155 @@ async function searchEmail(email) {
             fontes: [],
             ultimaAtualizacao: new Date().toLocaleDateString('pt-BR'),
             fonte: 'Validação Local (erro)'
+        };
+    }
+}
+
+// ============================================================================
+// CIVIL REGISTRY INTEGRATION
+// ============================================================================
+
+async function searchCivilRegistry(query, page = 1, limit = 20) {
+    try {
+        showLoadingState();
+        
+        // Initialize Civil Registry Service
+        const civilService = new CivilRegistryService();
+        
+        // Search with pagination
+        const results = await civilService.searchCivilRegistry(query, page, limit);
+        
+        // Get detailed analysis for first result
+        let detailedAnalysis = null;
+        if (results.success && results.data.data && results.data.data.length > 0) {
+            const firstResult = results.data.data[0];
+            detailedAnalysis = await civilService.getDetailedInfo(firstResult.id);
+        }
+        
+        hideLoadingState();
+        
+        return {
+            success: true,
+            data: results.data,
+            pagination: results.pagination,
+            mlAnalysis: results.mlAnalysis,
+            detailedAnalysis: detailedAnalysis,
+            source: 'Civil Registry Transparency',
+            query: query,
+            timestamp: new Date().toISOString()
+        };
+        
+    } catch (error) {
+        console.error('Civil Registry search error:', error);
+        hideLoadingState();
+        return {
+            success: false,
+            error: error.message,
+            fallback: await civilService.getMockData(query)
+        };
+    }
+}
+
+async function trainCivilRegistryModel(trainingData) {
+    try {
+        const civilService = new CivilRegistryService();
+        const result = await civilService.trainModel('civilRisk', trainingData);
+        
+        if (result.success) {
+            console.log('✅ Civil Registry ML model trained successfully');
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('ML training failed:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+async function analyzeWithCivilML(data) {
+    try {
+        const civilService = new CivilRegistryService();
+        const features = civilService.extractFeatures(data);
+        const prediction = await civilService.predict('civilRisk', features);
+        
+        return {
+            success: true,
+            prediction: prediction.prediction,
+            confidence: prediction.confidence,
+            riskAssessment: prediction.prediction,
+            mlAnalysis: {
+                riskLevel: prediction.prediction.riskLevel,
+                riskScore: prediction.prediction.riskScore,
+                recommendation: prediction.prediction.recommendation,
+                anomalies: prediction.prediction.anomalies || [],
+                patterns: prediction.prediction.patterns || []
+            }
+        };
+    } catch (error) {
+        console.error('Civil ML analysis failed:', error);
+        return {
+            success: false,
+            error: error.message,
+            fallback: {
+                riskLevel: 'Médio',
+                confidence: 0.6,
+                recommendation: 'Verificação manual recomendada'
+            }
+        };
+    }
+}
+
+// ============================================================================
+// ENHANCED SEARCH HANDLING WITH CIVIL REGISTRY
+// ============================================================================
+
+async function searchPersonWithCivilRegistry(name) {
+    try {
+        showLoadingState();
+        
+        // Standard search
+        const standardResults = await searchPerson(name);
+        
+        // Civil Registry search
+        const civilResults = await searchCivilRegistry(name);
+        
+        // ML Analysis
+        const mlAnalysis = civilResults.success ? 
+            await analyzeWithCivilML(civilResults.data) : 
+            { fallback: 'ML analysis unavailable' };
+        
+        // Combine results
+        const combinedResults = {
+            personal: {
+                ...standardResults.personal,
+                civilRegistry: civilResults.success ? civilResults.data : null,
+                mlAnalysis: mlAnalysis.success ? mlAnalysis.mlAnalysis : null
+            },
+            social: standardResults.social,
+            documents: {
+                ...standardResults.documents,
+                civilDocuments: civilResults.success ? civilResults.detailedAnalysis?.documents : null
+            },
+            financial: standardResults.financial,
+            riskAssessment: civilResults.success ? civilResults.detailedAnalysis?.riskAssessment : null,
+            sources: [
+                standardResults.personal?.fonte || 'Portal da Transparência',
+                civilResults.success ? civilResults.source : null
+            ]
+        };
+        
+        hideLoadingState();
+        
+        return combinedResults;
+    } catch (error) {
+        console.error('Enhanced person search error:', error);
+        hideLoadingState();
+        return {
+            error: error.message,
+            fallback: standardResults
         };
     }
 }
