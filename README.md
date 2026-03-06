@@ -1,26 +1,32 @@
-# Sistema OSINT - Análise Predial Consulado EUA
+# Background Check Pro - Sistema Profissional de Verificação
 
-Sistema profissional para agentes de modernização predial da Prefeitura de São Paulo e órgãos da Polícia Civil. Realiza mineração on demand de informações OSINT legais sobre o edifício do consulado norte-americano, identificando irregularidades em registros e oportunidades de modernização radical para segurança.
+Sistema avançado de background check para verificação profunda de pessoas e empresas. Utiliza técnicas OSINT avançadas com integração a múltiplas APIs (Google, Facebook, Escavador) para análise completa de antecedentes, dados financeiros, redes sociais e documentos legais.
 
 ## Funcionalidades
 
-- **Interface Profissional**: UI sólida com Bootstrap, ícones e layout responsivo para uso oficial.
-- **Busca On Demand**: Campos para endereço e termos SEI, com botões para análise, busca e exportação.
-- **Irregularidades Identificadas**: Lista de potenciais problemas em documentação e conformidade.
-- **Oportunidades de Modernização**: Sugestões focadas em segurança predial.
-- **Dados Geográficos**: Integração com GEOSAMPA para riscos e edificações.
-- **Scraping Legal**: Extração de conteúdo de sites oficiais.
-- **Mineração On-Demand**: A interface usa sete caixas principais que agrupam um conjunto de webservices/OSINT Brazuca:
-  1. **Infraestrutura** – GeoSampa, Prefeitura, cadastro imobiliário;
-  2. **Redes Sociais** – Twitter, Facebook, Instagram (coletados pelo OSINT Brazuca);
-  3. **Busca Web** – Google, YouTube, notícias;
-  4. **Documentos** – SEI, AVCB, licenças;
-  5. **Fiscal/Tributos** – CNPJ, IPTU, regime diplomático;
-  6. **Segurança** – saídas de incêndio, riscos geológicos;
-  7. **CNPJ/CPF** – Dados cadastrais do consulado (padrão: 54.016.822/0001-82).
+### 🔍 **Verificação Profunda**
+- **Análise de Pessoas**: Verificação completa de antecedentes, dados cadastrais, redes sociais
+- **Análise de Empresas**: CNPJ, sócios, documentos legais, situação financeira
+- **Geração de CPF**: Algoritmo avançado para geração de CPFs válidos a partir de nomes
+- **Validação de Documentos**: CPF, CNPJ, telefones, e-mails com verificação em tempo real
 
-  Cada caixa dispara `fetch('/api/osint/<categoria>?live=1')` para o servidor hospedado na codespace. O backend agrega diversas fontes (Twitter, Google, GeoSampa, Prefeitura) e devolve os dados agrupados por origem.
-- **Exportação de Relatórios**: Geração de JSON para registros oficiais.
+### 🌐 **Integração APIs**
+- **Google Custom Search**: Busca profunda na web e redes sociais
+- **Facebook Graph API**: Dados de perfis e páginas sociais
+- **Escavador API**: Documentos legais e processos judiciais
+- **Sistema de Fallback**: Robustez garantida mesmo sem APIs configuradas
+
+### 🎯 **Interface Terminal-Style**
+- **Design Neobrutalista**: Terminal hacker com cores verde/preto
+- **Avaliação de Risco**: Medidor visual com alertas inteligentes
+- **Linha do Tempo**: Histórico completo de verificações e eventos
+- **Cards Detalhados**: Informações organizadas por categoria
+
+### 📊 **Análise Inteligente**
+- **Score de Risco**: Algoritmo proprietário para cálculo de risco
+- **Alertas Automáticos**: Classificação por nível de perigo
+- **Validação Cruzada**: Verificação em múltiplas fontes
+- **Relatórios Abrangentes**: Exportação em múltiplos formatos
 
 ## Acesso Autorizado
 
@@ -30,15 +36,21 @@ Exclusivo para delegados e agentes autorizados. Todas as operações são basead
 
 1. Execute o servidor: `npm start`
 2. Acesse `http://localhost:3000`
-3. Insira endereço e termos, clique em "Analisar"
-4. Use "Buscar SEI" para processos relacionados
-5. Exporte relatórios para documentação
+3. Selecione o tipo de verificação (Pessoa, Empresa, CPF/CNPJ, Telefone, E-mail)
+4. Digite os dados para verificação profunda
+5. Escolha o nível de profundidade (Básico, Padrão, Profundo, Abrangente)
+6. Clique em "VERIFICAR" para análise completa
+7. Analise o score de risco e alertas gerados
+8. Exporte relatórios para documentação
 
 ## Tecnologias
 
-- Backend: Node.js / Express
-- Frontend: Bootstrap 5, Font Awesome
-- APIs: GEOSAMPA, Nominatim, Scraping com Cheerio
+- **Backend**: Node.js / Express
+- **Frontend**: Bootstrap 5, Font Awesome, JetBrains Mono
+- **APIs**: Google Custom Search, Facebook Graph, Escavador
+- **Estilo**: Neobrutalista Terminal-Style
+- **Validação**: Algoritmos próprios para CPF/CNPJ
+- **OSINT**: Técnicas avançadas de inteligência de fonte aberta
 
 ## GitHub Pages Deployment
 
