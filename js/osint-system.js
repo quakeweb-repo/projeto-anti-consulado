@@ -26,12 +26,23 @@ var BCP = (function() {
     function setSearchType(type) {
         currentSearchType = type;
         var btns = document.querySelectorAll('.type-btn');
-        for (var i = 0; i < btns.length; i++) {
-            btns[i].classList.remove('active');
+        var target = null;
+        
+        if (event && event.target) {
+            target = event.target;
+        } else if (btns && btns.length > 0) {
+            target = btns[0];
         }
-        // Handle both button click and event.target
-        var target = event && event.target ? event.target : btns[0];
-        target.classList.add('active');
+        
+        if (btns && btns.length > 0) {
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+            }
+        }
+        
+        if (target) {
+            target.classList.add('active');
+        }
         
         var input = document.getElementById('searchInput');
         if (input) {
