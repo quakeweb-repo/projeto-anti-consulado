@@ -18,6 +18,11 @@ Abra o `index.html` em um navegador web. O site carregará automaticamente os da
 - API GEOSAMPA
 - Nominatim (OpenStreetMap) para geocodificação
 
-## Publicação
+## Publicação no GitHub Pages
 
-Publicado no GitHub Pages.
+1. Faça push deste repositório para o GitHub.
+2. Vá para as configurações do repositório.
+3. Na seção "Pages", selecione a branch "main" e a pasta "/ (root)".
+4. Salve e aguarde a publicação.
+
+O site estará disponível em `https://<seu-usuario>.github.io/projeto-anti-consulado/`.
