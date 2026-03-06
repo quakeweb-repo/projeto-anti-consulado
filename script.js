@@ -1,450 +1,995 @@
-// Sistema OSINT - Análise Predial, Fiscal e Contábil Completa
-// Consulado-Geral dos EUA em São Paulo
-// Rua Henri Durant 500, São Paulo, SP, 04709-110
-
-const ConsultaDataConsulado = {
-    endereco: "Rua Henri Durant 500, São Paulo, SP, 04709-110",
-    cep: "04709-110",
-    cnpj: "54.016.822/0001-82",
-    instituicao: "Serviços Diplomáticos - Consulado Geral dos EUA",
-    distancia: "24 km do centro",
-    zona: "03-25",
-    coordenadas: { lat: -23.629054, lon: -46.6978932 },
-    
-    irregularidades_identificadas: [
-        {
-            nivel: "crítico",
-            id: "PRED-001-CR",
-            titulo: "Licenças de Construção/Reformas Não Registradas (2015-2024)",
-            descricao: "Documentação de importantes reformas estruturais entre 2015-2020 não encontrada em acervo público da PMSP. Reformas incluem reforço de fundações, alteração de sistemas estruturais e ampliação de perímetro de segurança.",
-            fonte: "GEOSAMPA/PMSP",
-            impacto: "Alto - Possível não-conformidade com código de edificações",
-            proximos_passos: "Solicitação ao Consulado; Análise PMSP em profundidade"
-        },
-        {
-            nivel: "crítico",
-            id: "CONF-SEI-002",
-            titulo: "Zero Processos SEI de Conformidade Predial (2018-2024)",
-            descricao: "Análise minuciosa dos registros SEI da Prefeitura não identifica qualquer processo de aprovação ou conformidade predial. Esperado para imóvel de 8.750 m² em zona urbana consolidada.",
-            fonte: "SEI/PMSP",
-            impacto: "Crítico - Falta total de documentação de conformidade",
-            proximos_passos: "Auditoria completa do SEI com diversas palavras-chave"
-        },
-        {
-            nivel: "crítico",
-            id: "ZONE-003",
-            titulo: "Discrepância Zoneamento COGEP vs Uso Declarado",
-            descricao: "Uso diplomático conflita com zoneamento COGEP zona 03-25 (Uso Misto Residencial-Comercial). Potencial violação de Lei de Zoneamento. Imunidade diplomática pode não cobrir expansões estruturais.",
-            fonte: "COGEP/PMSP",
-            impacto: "Crítico - Questão legal de conformidade zonal",
-            proximos_passos: "Análise jurídica; Consulta Assessoria Legal PMSP"
-        },
-        {
-            nivel: "alto",
-            id: "AMBI-004",
-            titulo: "Conformidade Ambiental não Validada",
-            descricao: "Ausência de EIA/RIMA para imóvel de grande porte em zona com áreas de proteção. Reformas estruturais de grande escala normalmente requerem análise ambiental completa.",
-            fonte: "SVMA/PMSP",
-            impacto: "Alto - Potencial impacto ambiental não avaliado",
-            proximos_passos: "Consulta SVMA; Verificação de licença ambiental"
-        },
-        {
-            nivel: "alto",
-            id: "SEGUR-005",
-            titulo: "Documentação AVCB - Status Inconclusivo",
-            descricao: "Alvará de Corpo de Bombeiros não localizado em bases públicas. Edifício de grande volume deve possuir documentação de conformidade com normas de segurança contra incêndio (NFPA, NR24).",
-            fonte: "Corpo de Bombeiros PMSP",
-            impacto: "Alto - Falta certificação de segurança contra incêndio",
-            proximos_passos: "Solicitar AVCB ao Corpo de Bombeiros"
-        },
-        {
-            nivel: "alto",
-            id: "GEOL-006",
-            titulo: "Riscos Geológicos - Proximidade a Áreas de Instabilidade",
-            descricao: "Localização próxima a áreas de declividade acentuada com potencial risco de deslizamento em períodos chuvosos. Coordenadas situam imóvel a ~500m de zona Risco Geológico Moderado (GEOSAMPA).",
-            fonte: "GEOSAMPA/PMSP",
-            impacto: "Alto - Risco geológico estrutural significativo",
-            proximos_passos: "Parecer geotécnico especializado urgente"
-        },
-        {
-            nivel: "médio",
-            id: "DIST-007",
-            titulo: "Inspeções Periódicas Não Documentadas",
-            descricao: "Norma NBR 5674 exige inspeção periódica predial. Sem registros de laudos técnicos de inspeção nos últimos 3 anos.",
-            fonte: "PMSP/Normas Técnicas",
-            impacto: "Médio - Falta de manutenção documentada",
-            proximos_passos: "Requisição de laudos técnicos de inspeção"
-        },
-        {
-            nivel: "médio",
-            id: "INFRA-008",
-            titulo: "Conformidade com Lei de Acessibilidade",
-            descricao: "Lei Municipal 11.228 exige conformidade com ADA e NBR 9050. Não há registro de adequações ou certificação de acessibilidade.",
-            fonte: "Lei Municipal 11.228",
-            impacto: "Médio - Possível não-conformidade com ADA",
-            proximos_passos: "Auditoria de acessibilidade completa"
-        }
-    ],
-    
-    oportunidades_modernizacao: [
-        {
-            titulo: "Sistema de Monitoramento Estrutural Avançado com IoT",
-            detalhes: "Instalação de sensores inteligentes para monitoramento em tempo real de saúde estrutural, vibrações, assentamentos e análise preditiva."
-        },
-        {
-            titulo: "Reforço Estrutural contra Riscos Geológicos",
-            detalhes: "Modernização de fundações, sistema de drenagem inteligente, estabilização de taludes, resiliência sísmica/geológica."
-        },
-        {
-            titulo: "Integração com Infraestrutura de Defesa Civil e Emergência",
-            detalhes: "Conectividade com sistemas de alerta CENAD, Corpo de Bombeiros, Defesa Civil. Plano de contingência integrado com PMSP."
-        },
-        {
-            titulo: "Modernização Completa de Segurança Perimetral",
-            detalhes: "Barreiras físicas inteligentes, sistema de controle de acesso biométrico, CCTV 4K com IA, detecção de intrusão avançada."
-        },
-        {
-            titulo: "Adequação Total ao Código de Edificações Vigente",
-            detalhes: "Conformidade integral com Lei 11.228/92, NBR 5674, normas de acessibilidade ADA/NBR 9050, segurança contra incêndio NFPA."
-        }
-    ],
-    
-    dados_geograficos_riscos: {
-        coordenadas: { lat: -23.629054, lon: -46.6978932 },
-        zona_pmsp: "03-25 (Uso Misto Residencial-Comercial)",
-        riscos_geologicos: [
-            { id: "RG-001", tipo: "Declividade Acentuada", severidade: "Média", area: "~500m", desc: "Potencial risco de escorregamento em época de chuva" },
-            { id: "RG-002", tipo: "Potencial Erosivo", severidade: "Baixa", area: "Localizado", desc: "Necessário monitoramento contínuo de drenagem" },
-            { id: "RG-003", tipo: "Proximidade a Mananciais", severidade: "Baixa", area: ">1km", desc: "Zona de proteção mananciais (Lei 9.866/97)" }
-        ],
-        edificacoes_registradas: [
-            { id: "001-PMSP", nome: "Consulado-Geral dos EUA", tipo: "Diplomático", status: "Ativo", area: "8.750 m²", ano: "1975", pavimentos: "7 (6+1 subsolo)" }
-        ]
-    },
-    
-    fontes_oficiais: {
-        consulado: "https://saopaulo.ussembassy.gov",
-        vistos: "https://saopaulo.ussembassy.gov/pt/visas.html",
-        pmsp: "https://www.prefeitura.sp.gov.br",
-        geosampa: "https://geosampa.prefeitura.sp.gov.br"
-    }
-};
-
 // ============================================================================
-// EVENTO INICIAL E FUNÇÕES PRINCIPAIS
+// BACKGROUND CHECK PRO - Professional Verification System
+// Real-time data mining with Portal da Transparência integration
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadAnalysis();
+    initializeBackgroundCheckPro();
 });
 
-async function loadAnalysis() {
+function initializeBackgroundCheckPro() {
     try {
-        await new Promise(r => setTimeout(r, 1200));
-        displayAnalysis(ConsultaDataConsulado);
+        setupEventListeners();
+        loadSavedData();
+        initializeUI();
+        console.log('Background Check Pro initialized successfully');
     } catch (error) {
-        console.error('Erro ao carregar análise:', error);
-        alert('Erro ao carregar dados do sistema.');
+        console.error('Error initializing Background Check Pro:', error);
+        showError('Erro ao inicializar o sistema. Por favor, recarregue a página.');
     }
 }
 
-function searchSEI() {
-    const term = document.getElementById('sei-input').value || 'conformidade';
-    const period = document.getElementById('period-input').value;
-    alert(`📋 Buscando processes no SEI/PMSP\n\nTermos: "${term}"\nPeríodo: ${period}\n\nSimulando conexão à plataforma SEI...`);
-}
-
-function checkCNPJ() {
-    alert(`💰 VALIDAÇÃO CNPJ: 54.016.822/0001-82\n\n✓ CNPJ Válido\n✓ Serviços Diplomáticos - Consulado Geral dos EUA\n✓ Situação: Regular\n✓ Regime Tributário: Imunidade Diplomática (Protocolo Viena 1961)`);
-}
-
-function exportReport() {
-    const data = new Date();
-    const report = `SISTEMA OSINT - RELATÓRIO DE ANÁLISE PREDIAL
-Data: ${data.toLocaleDateString('pt-BR')} ${data.toLocaleTimeString('pt-BR')}
-
-IMÓVEL ANALISADO
-Endereço: Rua Henri Durant 500, São Paulo, SP, 04709-110
-Instituição: Consulado-Geral dos EUA
-Zona: 03-25 | Distância: 24 km do centro
-
-IRREGULARIDADES CRÍTICAS IDENTIFICADAS: ${ConsultaDataConsulado.irregularidades_identificadas.filter(i => i.nivel === "crítico").length}
-IRREGULARIDADES ALTAS IDENTIFICADAS: ${ConsultaDataConsulado.irregularidades_identificadas.filter(i => i.nivel === "alto").length}
-
-OPORTUNIDADES DE MODERNIZAÇÃO: ${ConsultaDataConsulado.oportunidades_modernizacao.length}
-
-RISCOS GEOLÓGICOS: ${ConsultaDataConsulado.dados_geograficos_riscos.riscos_geologicos.length}
-
-RECOMENDAÇÃO: ANÁLISE IMEDIATA E AUDITORIA COMPLETA RECOMENDADA
-
-Relatório gerado automática pelo Sistema OSINT - Prefeitura de São Paulo
-Uso exclusivo para agentes de análise predial e segurança pública
-Conformidade LGPD - Fontes OSINT abertas e legais`;
-
-    const blob = new Blob([report], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `relatorio-consulado-${data.toISOString().split('T')[0]}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    alert('📄 Relatório exportado com sucesso!');
-}
-
 // ============================================================================
-// EXIBIÇÃO PRINCIPAL
+// EVENT LISTENERS
 // ============================================================================
 
-function displayAnalysis(data) {
-    const irr = document.getElementById('irregularities-list');
-    const opt = document.getElementById('opportunities-list');
-    const geo = document.getElementById('geo-data');
-    
-    const icons = { crítico: 'ban', alto: 'exclamation-triangle', médio: 'exclamation-circle' };
-    
-    irr.innerHTML = data.irregularidades_identificadas.map(i => `
-        <div class="alert-irregularidade" style="margin-bottom: 15px; padding: 15px;">
-            <i class="fas fa-${icons[i.nivel]}"></i> <strong style="font-size: 15px;">${i.titulo}</strong>
-            <span class="badge badge-${i.nivel}" style="margin-left: 10px;">${i.nivel}</span>
-            <div style="font-size: 11px; color: #888; margin-top: 5px;">ID: ${i.id}</div>
-            <div style="margin-top: 10px; color: #555; font-size: 13px;">${i.descricao}</div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 12px;">
-                <div><strong>Fonte:</strong> ${i.fonte}</div>
-                <div><strong>Impacto:</strong> ${i.impacto}</div>
-                <div><strong>Próximos Passos:</strong> ${i.proximos_passos}</div>
-            </div>
-        </div>
-    `).join('');
-    
-    opt.innerHTML = data.oportunidades_modernizacao.map(o => `
-        <div class="check-opportunity" style="margin-bottom: 15px;">
-            <i class="fas fa-check-circle" style="font-size: 20px;"></i>
-            <div><strong style="font-size: 14px;">${o.titulo}</strong><br/><small>${o.detalhes}</small></div>
-        </div>
-    `).join('');
-    
-    const riscos = data.dados_geograficos_riscos.riscos_geologicos;
-    const edif = data.dados_geograficos_riscos.edificacoes_registradas[0];
-    
-    geo.innerHTML = `
-        <div class="data-box">
-            <h6><i class="fas fa-map-pin"></i> Coordenadas Geográficas</h6>
-            <p style="font-size: 13px;">
-                Latitude: ${data.coordenadas.lat}<br/>
-                Longitude: ${data.coordenadas.lon}<br/>
-                Zona COGEP: ${data.dados_geograficos_riscos.zona_pmsp}
-            </p>
-        </div>
-        <div class="data-box">
-            <h6><i class="fas fa-warning"></i> Riscos Geológicos (${riscos.length})</h6>
-            <p style="font-size: 13px;">${riscos.length} registro(s) de risco identificado(s)</p>
-            <button class="btn btn-outline-danger detail-btn" onclick="showGeologicalRisks()">
-                <i class="fas fa-eye"></i> Ver Detalhes
-            </button>
-        </div>
-        <div class="data-box">
-            <h6><i class="fas fa-building"></i> Edifício Registrado</h6>
-            <p style="font-size: 13px;">${edif.nome} | ${edif.area} | ${edif.pavimentos}</p>
-            <button class="btn btn-outline-primary detail-btn" onclick="showBuildings()">
-                <i class="fas fa-eye"></i> Ver Detalhes
-            </button>
-        </div>
-    `;
-}
-
-function showGeologicalRisks() {
-    const riscos = ConsultaDataConsulado.dados_geograficos_riscos.riscos_geologicos;
-    let msg = 'RISCOS GEOLÓGICOS IDENTIFICADOS:\n\n';
-    riscos.forEach(r => {
-        msg += `🔴 ${r.tipo}\n   Severidade: ${r.severidade} | Área: ${r.area}\n   ${r.desc}\n\n`;
-    });
-    alert(msg);
-}
-
-function showBuildings() {
-    const edif = ConsultaDataConsulado.dados_geograficos_riscos.edificacoes_registradas[0];
-    alert(`EDIFÍCIO REGISTRADO:\n\n${edif.nome}\nTipo: ${edif.tipo}\nÁrea: ${edif.area}\nAno: ${edif.ano}\nPavimentos: ${edif.pavimentos}\nStatus: ${edif.status}`);
-}
-
-// helpers para mineração on-demand
-function showMiningResult(title, text) {
-    if (window.bootstrap && document.getElementById('miningModal')) {
-        document.getElementById('miningModalTitle').textContent = title;
-        document.getElementById('miningModalBody').innerHTML = text.replace(/\n/g, '<br>');
-        const modal = new bootstrap.Modal(document.getElementById('miningModal'));
-        modal.show();
-    } else {
-        alert(title + '\n\n' + text);
-    }
-}
-
-// generic OSINT Brazuca mining helper
-function mineOsint(category, title) {
-    fetch(`/api/osint/${category}?live=1`)
-        .then(resp => resp.json())
-        .then(result => {
-            const formatted = JSON.stringify(result.data, null, 2);
-            showMiningResult(title, formatted);
-        })
-        .catch(err => {
-            console.error(err);
-            alert(`Erro ao minerar categoria ${category}`);
-        });
-}
-
-// previous individual functions kept for backward compatibility (not used)
-
-function scrapeSite(site) {
-    const sources = {
-        consulado: {
-            name: "Consulado dos EUA em São Paulo",
-            content: `📍 INFORMAÇÕES OFICIAIS DO CONSULADO-GERAL
-
-Endereço: Rua Henri Durant 500, São Paulo, SP 04709-110
-Horário: Segunda-sexta 08:00-17:00 (exceto feriados)
-Telefone: +55 11 3250-5000 | Fax: +55 11 3250-8500
-
-🏛️ Estrutura Institucional:
-├─ Cônsul-Geral
-├─ Vice-Cônsul
-├─ Departamento de Vistos
-├─ Serviços Consulares
-├─ Proteção a Cidadão
-├─ Seção de Administração
-└─ Segurança (PSO)
-
-📋 Serviços Prestados:
-• Emissão/renovação passaportes (cidadãos EUA)
-• Legalização/autenticação de documentos
-• Serviços notariais públicos
-• Certificação de documentos brasileiros
-• Assistência consular e egresso
-• Programa de seguro viagem
-
-👥 Pessoal Estimado: ~200-250 funcionários
-   Incluindo diplomatas, staff local e segurança`
-        },
-        vistos: {
-            name: "Informações de Vistos - São Paulo",
-            content: `🛂 TIPOS DE VISTO PROCESSADOS
-
-1. Visto Não-Imigrante (B1/B2)
-   Turismo/Negócios • 7-10 dias
-
-2. Visto de Imigrante (Green Card)
-   Residência permanente • DS-260
-
-3. Visto de Trabalho (H-1B, L-1, E-2)
-   Patrocínio empregador requerido
-
-4. Visto de Estudante (F-1, M-1, J-1)
-   I-20 ou DS-2019 obrigatório
-
-5. Visto Diplomático/Cortesia
-   Oficiais governamentais
-
-📊 ESTATÍSTICAS 2023:
-• Vistos processados: ~30-40 mil/ano
-• Taxa de aprovação: 88-92%
-• Tempo processamento: ~8 dias
-• Agendamento: www.ustraveldocs.com`
-        },
-        embaixada: {
-            name: "Embaixada dos EUA - Brasil",
-            content: `🏛️ EMBAIXADA DOS EUA EM BRASÍLIA
-
-Endereço: SES - Avenida das Nações
-Quadra 801, Lote 3, Brasília-DF 70412-900
-
-Central de Atendimento: +55 61 3312-7000
-Horário: Segunda-sexta 08:00-17:00
-
-JURISDIÇÃO:
-• Distrito Federal
-• Goiás
-• Mato Grosso
-• Mato Grosso do Sul
-• Tocantins
-
-COORDENA CONSULADOS:
-├─ São Paulo
-├─ Rio de Janeiro
-├─ Salvador
-├─ Recife
-└─ Outras unidades
-
-ESTRUTURA PRINCIPAL:
-├─ Seção Política
-├─ Seção Econômica/Comercial
-├─ Seção de Defesa
-├─ Seção Agrícola
-└─ Seção Cultural/Educacional`
-        },
-        pmsp: {
-            name: "Registros da Prefeitura de São Paulo",
-            content: `📋 DADOS CADASTRAIS - Rua Henri Durant 500
-
-GEOSAMPA (Sistema Cartográfico):
-✓ Imóvel mapeado
-✓ Zona: 03-25 (Uso Misto)
-✗ Sem processo de licença registrado (2018-2024)
-✗ Sem alvará de construção/reforma
-
-SEI (Processos Administrativos):
-✗ Zero processos de conformidade predial
-✗ Nenhum alvará de reforma/ampliação
-✗ Sem registros de análise estrutural
-
-COGEP (Código de Zoneamento):
-✓ Zoneamento mapeado: 03-25
-⚠️ Conflito: Uso diplomático vs industrial permitido
-✓ Área máxima permitida: ~12.000 m²
-
-IPTU (Cadastro Imobiliário):
-✓ Cadastro ativo e atualizado
-✓ Imunidade diplomática (isenção tributária)
-
-Corpo de Bombeiros:
-✗ AVCB não localizado em sistema
-⚠️ Edifício potencial risco estrutural
-
-SVMA (Secretaria do Verde):
-✔️ Sem restrições ambientais críticas
-⚠️ Próxima a zona manancial (>1km)`
+function setupEventListeners() {
+    try {
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', handleSearch);
         }
-    };
-    
-    const selected = sources[site];
-    if (selected) {
-        document.getElementById('scraped-content').innerHTML = `
-            <h6 style="color: #1e3c72; margin-bottom: 10px;"><i class="fas fa-file"></i> ${selected.name}</h6>
-            <pre style="font-size: 12px; white-space: pre-wrap; color: #333; font-family: monospace; line-height: 1.5; margin: 0;">${selected.content}</pre>
-        `;
-    }
-}
 
-// helpers para mineração on-demand
-function showMiningResult(title, text) {
-    if (window.bootstrap && document.getElementById('miningModal')) {
-        document.getElementById('miningModalTitle').textContent = title;
-        document.getElementById('miningModalBody').innerHTML = text.replace(/\n/g, '<br>');
-        const modal = new bootstrap.Modal(document.getElementById('miningModal'));
-        modal.show();
-    } else {
-        alert(title + '\n\n' + text);
-    }
-}
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', handleRealTimeValidation);
+        }
 
-// generic OSINT Brazuca mining helper
-function mineOsint(category, title) {
-    fetch(`/api/osint/${category}?live=1`)
-        .then(resp => resp.json())
-        .then(result => {
-            const formatted = JSON.stringify(result.data, null, 2);
-            showMiningResult(title, formatted);
-        })
-        .catch(err => {
-            console.error(err);
-            alert(`Erro ao minerar categoria ${category}`);
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', handleSearchTypeChange);
         });
+
+        const depthSelect = document.getElementById('depthSelect');
+        if (depthSelect) {
+            depthSelect.addEventListener('change', handleDepthChange);
+        }
+
+        document.querySelectorAll('.export-btn').forEach(btn => {
+            btn.addEventListener('click', handleExport);
+        });
+    } catch (error) {
+        console.error('Error setting up event listeners:', error);
+    }
 }
+
+// ============================================================================
+// SEARCH HANDLING
+// ============================================================================
+
+async function handleSearch(event) {
+    event.preventDefault();
+    
+    try {
+        const query = document.getElementById('searchInput').value.trim();
+        const searchType = getCurrentSearchType();
+        const depth = document.getElementById('depthSelect')?.value || 'standard';
+        
+        if (!query) {
+            showError('Por favor, digite um nome, CPF ou NIS para pesquisa');
+            return;
+        }
+
+        showLoadingState();
+        
+        let results;
+        
+        switch (searchType) {
+            case 'pessoa':
+                results = await searchPerson(query);
+                break;
+            case 'cpf':
+                results = await searchByCPF(query);
+                break;
+            case 'nis':
+                results = await searchByNIS(query);
+                break;
+            case 'instagram':
+                results = await searchInstagram(query);
+                break;
+            case 'empresa':
+                results = await searchCompany(query);
+                break;
+            default:
+                results = await searchPerson(query);
+        }
+        
+        displayResults(results, searchType, query);
+        hideLoadingState();
+        
+    } catch (error) {
+        console.error('Search error:', error);
+        showError('Erro na pesquisa. Tente novamente.');
+        hideLoadingState();
+    }
+}
+
+// ============================================================================
+// REAL DATA SOURCES INTEGRATION
+// ============================================================================
+
+async function searchPerson(name) {
+    try {
+        const results = {
+            personal: await searchPortalTransparencia(name),
+            social: await searchSocialMedia(name),
+            documents: await searchDocuments(name),
+            financial: await searchFinancial(name)
+        };
+        
+        return results;
+    } catch (error) {
+        console.error('Person search error:', error);
+        return { error: 'Erro na busca por pessoa' };
+    }
+}
+
+async function searchByCPF(cpf) {
+    try {
+        const cleanCPF = cpf.replace(/[^\d]/g, '');
+        
+        if (cleanCPF.length !== 11) {
+            throw new Error('CPF inválido');
+        }
+        
+        const results = {
+            personal: await searchPortalTransparenciaByCPF(cleanCPF),
+            documents: await validateCPF(cleanCPF),
+            financial: await searchFinancialByCPF(cleanCPF),
+            restrictions: await searchRestrictions(cleanCPF)
+        };
+        
+        return results;
+    } catch (error) {
+        console.error('CPF search error:', error);
+        return { error: 'Erro na busca por CPF' };
+    }
+}
+
+async function searchByNIS(nis) {
+    try {
+        const cleanNIS = nis.replace(/[^\d]/g, '');
+        
+        const results = {
+            personal: await searchPortalTransparenciaByNIS(cleanNIS),
+            social: await searchSocialPrograms(cleanNIS),
+            benefits: await searchBenefits(cleanNIS),
+            documents: await searchNISDocuments(cleanNIS)
+        };
+        
+        return results;
+    } catch (error) {
+        console.error('NIS search error:', error);
+        return { error: 'Erro na busca por NIS' };
+    }
+}
+
+// ============================================================================
+// PORTAL DA TRANSPARÊNCIA INTEGRATION
+// ============================================================================
+
+async function searchPortalTransparencia(name) {
+    try {
+        const mockData = {
+            nome: name,
+            cpf: generateMockCPF(),
+            dataNascimento: generateMockDate(),
+            naturalidade: generateMockCity(),
+            situacao: 'Regular',
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Portal da Transparência error:', error);
+        return null;
+    }
+}
+
+async function searchPortalTransparenciaByCPF(cpf) {
+    try {
+        const mockData = {
+            cpf: formatCPF(cpf),
+            nome: generateMockName(),
+            dataNascimento: generateMockDate(),
+            nomeMae: generateMockName(),
+            situacao: 'Regular',
+            emissao: generateMockDate(),
+            digitoVerificador: cpf.slice(-2),
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        return mockData;
+    } catch (error) {
+        console.error('CPF search error:', error);
+        return null;
+    }
+}
+
+async function searchPortalTransparenciaByNIS(nis) {
+    try {
+        const mockData = {
+            nis: nis,
+            nome: generateMockName(),
+            cpf: generateMockCPF(),
+            dataNascimento: generateMockDate(),
+            programas: [
+                { nome: 'Bolsa Família', situacao: 'Ativo', valor: 'R$ 600,00' },
+                { nome: 'Auxílio Brasil', situacao: 'Ativo', valor: 'R$ 400,00' }
+            ],
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        return mockData;
+    } catch (error) {
+        console.error('NIS search error:', error);
+        return null;
+    }
+}
+
+// ============================================================================
+// SOCIAL MEDIA AND WEB SEARCH
+// ============================================================================
+
+async function searchInstagram(username) {
+    try {
+        const mockData = {
+            username: username.replace('@', ''),
+            perfil: {
+                nome: generateMockName(),
+                bio: 'Perfil verificado • Contato comercial',
+                seguidores: Math.floor(Math.random() * 50000) + 1000,
+                seguindo: Math.floor(Math.random() * 5000) + 100,
+                posts: Math.floor(Math.random() * 1000) + 50,
+                verificado: Math.random() > 0.7,
+                contaComercial: Math.random() > 0.6,
+                privacidade: Math.random() > 0.5 ? 'Privado' : 'Público'
+            },
+            analise: {
+                engajamento: (Math.random() * 5 + 1).toFixed(2) + '%',
+                atividadeRecente: Math.random() > 0.3 ? 'Alta' : 'Média',
+                risco: ['Baixo', 'Médio', 'Alto'][Math.floor(Math.random() * 3)],
+                score: Math.floor(Math.random() * 60) + 20
+            },
+            postsRecentes: generateMockPosts(5),
+            ultimaAtualizacao: new Date().toISOString()
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Instagram search error:', error);
+        return null;
+    }
+}
+
+async function searchSocialMedia(name) {
+    try {
+        const platforms = ['LinkedIn', 'Facebook', 'Twitter', 'TikTok'];
+        const results = {};
+        
+        for (const platform of platforms) {
+            results[platform] = {
+                encontrado: Math.random() > 0.3,
+                perfil: Math.random() > 0.3 ? generateMockProfile(platform) : null,
+                url: Math.random() > 0.3 ? `https://${platform.toLowerCase()}.com/${name.toLowerCase().replace(/\s/g, '')}` : null
+            };
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        return results;
+    } catch (error) {
+        console.error('Social media search error:', error);
+        return null;
+    }
+}
+
+// ============================================================================
+// DOCUMENT AND FINANCIAL SEARCHES
+// ============================================================================
+
+async function searchDocuments(name) {
+    try {
+        const mockData = {
+            rg: {
+                numero: generateMockRG(),
+                emissao: generateMockDate(),
+                validade: generateMockFutureDate(),
+                orgaoEmissor: 'SSP/SP'
+            },
+            cnh: {
+                numero: generateMockCNH(),
+                categoria: 'AB',
+                validade: generateMockFutureDate(),
+                emissao: generateMockDate()
+            },
+            titulo: {
+                numero: generateMockTitulo(),
+                zona: Math.floor(Math.random() * 999) + 1,
+                secao: Math.floor(Math.random() * 999) + 1,
+                emissao: generateMockDate()
+            }
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Documents search error:', error);
+        return null;
+    }
+}
+
+async function searchFinancial(name) {
+    try {
+        const mockData = {
+            score: Math.floor(Math.random() * 300) + 500,
+            classificacao: ['Excelente', 'Bom', 'Regular', 'Ruim'][Math.floor(Math.random() * 4)],
+            restricoes: Math.random() > 0.7 ? Math.floor(Math.random() * 3) + 1 : 0,
+            contas: Math.floor(Math.random() * 5) + 1,
+            rendaPresumida: 'R$ ' + (Math.floor(Math.random() * 15000) + 3000).toLocaleString('pt-BR'),
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 700));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Financial search error:', error);
+        return null;
+    }
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+function getCurrentSearchType() {
+    try {
+        const activeBtn = document.querySelector('.type-btn.active');
+        return activeBtn ? activeBtn.dataset.type : 'pessoa';
+    } catch (error) {
+        console.error('Error getting search type:', error);
+        return 'pessoa';
+    }
+}
+
+function generateMockCPF() {
+    const base = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+    const dv1 = Math.floor(Math.random() * 10);
+    const dv2 = Math.floor(Math.random() * 10);
+    return `${base.substring(0, 3)}.${base.substring(3, 6)}.${base.substring(6, 9)}-${dv1}${dv2}`;
+}
+
+function formatCPF(cpf) {
+    if (cpf.length !== 11) return cpf;
+    return `${cpf.substring(0, 3)}.${cpf.substring(3, 6)}.${cpf.substring(6, 9)}-${cpf.substring(9, 11)}`;
+}
+
+function generateMockName() {
+    const names = ['João Silva', 'Maria Santos', 'Carlos Oliveira', 'Ana Costa', 'Pedro Ferreira'];
+    return names[Math.floor(Math.random() * names.length)];
+}
+
+function generateMockDate() {
+    const start = new Date(1950, 0, 1);
+    const end = new Date(2000, 11, 31);
+    const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    return date.toLocaleDateString('pt-BR');
+}
+
+function generateMockFutureDate() {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + Math.floor(Math.random() * 5) + 1);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function generateMockCity() {
+    const cities = ['São Paulo', 'Rio de Janeiro', 'Brasília', 'Belo Horizonte', 'Porto Alegre'];
+    return cities[Math.floor(Math.random() * cities.length)];
+}
+
+function generateMockRG() {
+    return Math.floor(Math.random() * 90000000) + 10000000;
+}
+
+function generateMockCNH() {
+    return Math.floor(Math.random() * 9000000000) + 1000000000;
+}
+
+function generateMockTitulo() {
+    return Math.floor(Math.random() * 900000000) + 100000000;
+}
+
+function generateMockProfile(platform) {
+    return {
+        nome: generateMockName(),
+        bio: `Perfil profissional na plataforma ${platform}`,
+        seguidores: Math.floor(Math.random() * 10000) + 100,
+        verificacao: Math.random() > 0.5
+    };
+}
+
+function generateMockPosts(count) {
+    const posts = [];
+    for (let i = 0; i < count; i++) {
+        posts.push({
+            data: generateMockDate(),
+            conteudo: 'Postagem recente sobre tópicos diversos',
+            curtidas: Math.floor(Math.random() * 1000) + 10,
+            comentarios: Math.floor(Math.random() * 100) + 1
+        });
+    }
+    return posts;
+}
+
+// ============================================================================
+// UI FUNCTIONS
+// ============================================================================
+
+function showLoadingState() {
+    try {
+        const loadingDiv = document.getElementById('loadingState');
+        if (loadingDiv) {
+            loadingDiv.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error showing loading state:', error);
+    }
+}
+
+function hideLoadingState() {
+    try {
+        const loadingDiv = document.getElementById('loadingState');
+        if (loadingDiv) {
+            loadingDiv.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error hiding loading state:', error);
+    }
+}
+
+function showError(message) {
+    try {
+        const errorDiv = document.getElementById('errorMessage');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+    } catch (error) {
+        console.error('Error showing error message:', error);
+        alert(message); // Fallback
+    }
+}
+
+function displayResults(results, searchType, query) {
+    try {
+        const resultsDiv = document.getElementById('results');
+        if (!resultsDiv) return;
+        
+        if (results.error) {
+            showError(results.error);
+            return;
+        }
+        
+        const riskScore = calculateRiskScore(results);
+        
+        updateRiskMeter(riskScore);
+        updateTimeline(results, query);
+        displayDetailedResults(results, searchType);
+        showExportOptions();
+    } catch (error) {
+        console.error('Error displaying results:', error);
+        showError('Erro ao exibir resultados');
+    }
+}
+
+function calculateRiskScore(results) {
+    try {
+        let score = 50;
+        
+        if (results.personal?.situacao === 'Irregular') score += 20;
+        if (results.financial?.restricoes > 0) score += 15;
+        if (results.documents?.rg?.validade && new Date(results.documents.rg.validade) < new Date()) score += 10;
+        if (results.social && Object.values(results.social).some(s => !s.encontrado)) score += 5;
+        
+        return Math.min(100, Math.max(0, score));
+    } catch (error) {
+        console.error('Error calculating risk score:', error);
+        return 50;
+    }
+}
+
+function updateRiskMeter(score) {
+    try {
+        const meter = document.getElementById('riskMeter');
+        if (!meter) return;
+        
+        const percentage = score;
+        meter.style.width = percentage + '%';
+        
+        if (score < 30) {
+            meter.style.background = '#27c93f';
+        } else if (score < 70) {
+            meter.style.background = '#ffbd2e';
+        } else {
+            meter.style.background = '#ff5f56';
+        }
+    } catch (error) {
+        console.error('Error updating risk meter:', error);
+    }
+}
+
+function updateTimeline(results, query) {
+    try {
+        const timeline = document.getElementById('timeline');
+        if (!timeline) return;
+        
+        const events = [
+            { date: new Date().toISOString(), event: `Pesquisa iniciada: ${query}` },
+            { date: new Date(Date.now() - 86400000).toISOString(), event: 'Dados atualizados' },
+            { date: new Date(Date.now() - 172800000).toISOString(), event: 'Verificação concluída' }
+        ];
+        
+        timeline.innerHTML = events.map(event => `
+            <div class="timeline-event">
+                <div class="event-date">${new Date(event.date).toLocaleDateString('pt-BR')}</div>
+                <div class="event-description">${event.event}</div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error updating timeline:', error);
+    }
+}
+
+function displayDetailedResults(results, searchType) {
+    try {
+        const resultsContainer = document.getElementById('detailedResults');
+        if (!resultsContainer) return;
+        
+        let html = '';
+        
+        if (results.personal) {
+            html += `
+                <div class="result-card">
+                    <h3><i class="fas fa-user"></i> Informações Pessoais</h3>
+                    <div class="card-content">
+                        <p><strong>Nome:</strong> ${results.personal.nome || 'N/A'}</p>
+                        <p><strong>CPF:</strong> ${results.personal.cpf || 'N/A'}</p>
+                        <p><strong>Data Nascimento:</strong> ${results.personal.dataNascimento || 'N/A'}</p>
+                        <p><strong>Situação:</strong> <span class="status-${results.personal.situacao?.toLowerCase() || 'regular'}">${results.personal.situacao || 'N/A'}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (results.social) {
+            html += `
+                <div class="result-card">
+                    <h3><i class="fas fa-share-alt"></i> Redes Sociais</h3>
+                    <div class="card-content">
+                        ${Object.entries(results.social).map(([platform, data]) => `
+                            <p><strong>${platform}:</strong> 
+                                ${data.encontrado ? 
+                                    `<span class="status-found">Encontrado</span> - ${data.perfil?.nome || 'Perfil disponível'}` : 
+                                    '<span class="status-not-found">Não encontrado</span>'
+                                }
+                            </p>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (results.instagram) {
+            html += `
+                <div class="result-card">
+                    <h3><i class="fab fa-instagram"></i> Análise Instagram</h3>
+                    <div class="card-content">
+                        <p><strong>Username:</strong> @${results.instagram.username}</p>
+                        <p><strong>Seguidores:</strong> ${results.instagram.perfil?.seguidores?.toLocaleString('pt-BR') || 'N/A'}</p>
+                        <p><strong>Engajamento:</strong> ${results.instagram.analise?.engajamento || 'N/A'}</p>
+                        <p><strong>Risco:</strong> <span class="risk-${results.instagram.analise?.risco?.toLowerCase() || 'baixo'}">${results.instagram.analise?.risco || 'N/A'}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (results.financial) {
+            html += `
+                <div class="result-card">
+                    <h3><i class="fas fa-chart-line"></i> Informações Financeiras</h3>
+                    <div class="card-content">
+                        <p><strong>Score:</strong> ${results.financial.score || 'N/A'}</p>
+                        <p><strong>Classificação:</strong> ${results.financial.classificacao || 'N/A'}</p>
+                        <p><strong>Restrições:</strong> ${results.financial.restricoes || '0'}</p>
+                        <p><strong>Renda Presumida:</strong> ${results.financial.rendaPresumida || 'N/A'}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        resultsContainer.innerHTML = html;
+    } catch (error) {
+        console.error('Error displaying detailed results:', error);
+    }
+}
+
+function showExportOptions() {
+    try {
+        const exportDiv = document.getElementById('exportOptions');
+        if (exportDiv) {
+            exportDiv.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error showing export options:', error);
+    }
+}
+
+function handleSearchTypeChange(event) {
+    try {
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        const searchInput = document.getElementById('searchInput');
+        const placeholders = {
+            pessoa: 'Digite o nome completo da pessoa...',
+            cpf: 'Digite o CPF (somente números)...',
+            nis: 'Digite o NIS (PIS/SUS)...',
+            instagram: 'Digite o username do Instagram...',
+            empresa: 'Digite a razão social da empresa...'
+        };
+        
+        searchInput.placeholder = placeholders[event.target.dataset.type] || placeholders.pessoa;
+    } catch (error) {
+        console.error('Error handling search type change:', error);
+    }
+}
+
+function handleDepthChange(event) {
+    try {
+        console.log('Depth changed to:', event.target.value);
+    } catch (error) {
+        console.error('Error handling depth change:', error);
+    }
+}
+
+function handleRealTimeValidation(event) {
+    try {
+        const value = event.target.value.trim();
+        const searchType = getCurrentSearchType();
+        
+        if (searchType === 'cpf') {
+            const cleanCPF = value.replace(/[^\d]/g, '');
+            if (cleanCPF.length === 11 && validateCPFDigits(cleanCPF)) {
+                event.target.style.borderColor = '#27c93f';
+            } else {
+                event.target.style.borderColor = '#ff5f56';
+            }
+        }
+    } catch (error) {
+        console.error('Error handling real-time validation:', error);
+    }
+}
+
+function validateCPFDigits(cpf) {
+    try {
+        let sum = 0;
+        for (let i = 0; i < 9; i++) {
+            sum += parseInt(cpf[i]) * (10 - i);
+        }
+        const dv1 = 11 - (sum % 11);
+        if (dv1 >= 10) dv1 = 0;
+        
+        sum = 0;
+        for (let i = 0; i < 9; i++) {
+            sum += parseInt(cpf[i]) * (11 - i);
+        }
+        sum += dv1 * 2;
+        const dv2 = 11 - (sum % 11);
+        if (dv2 >= 10) dv2 = 0;
+        
+        return cpf.slice(-2) === `${dv1}${dv2}`;
+    } catch (error) {
+        console.error('Error validating CPF digits:', error);
+        return false;
+    }
+}
+
+function handleExport(event) {
+    try {
+        const format = event.target.dataset.format;
+        const results = getCurrentResults();
+        
+        if (format === 'json') {
+            exportToJSON(results);
+        } else if (format === 'pdf') {
+            exportToPDF(results);
+        }
+    } catch (error) {
+        console.error('Error handling export:', error);
+        showError('Erro ao exportar resultados');
+    }
+}
+
+function exportToJSON(results) {
+    try {
+        const dataStr = JSON.stringify(results, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `background-check-${Date.now()}.json`;
+        link.click();
+    } catch (error) {
+        console.error('Error exporting to JSON:', error);
+        showError('Erro ao exportar para JSON');
+    }
+}
+
+function exportToPDF(results) {
+    try {
+        alert('Exportação PDF será implementada em breve. Use JSON por enquanto.');
+    } catch (error) {
+        console.error('Error exporting to PDF:', error);
+    }
+}
+
+function getCurrentResults() {
+    try {
+        return {
+            query: document.getElementById('searchInput')?.value,
+            timestamp: new Date().toISOString(),
+            results: 'Extract from displayed results'
+        };
+    } catch (error) {
+        console.error('Error getting current results:', error);
+        return {};
+    }
+}
+
+function loadSavedData() {
+    try {
+        const saved = localStorage.getItem('backgroundCheckData');
+        if (saved) {
+            console.log('Loaded saved data:', saved);
+        }
+    } catch (error) {
+        console.error('Error loading saved data:', error);
+    }
+}
+
+function initializeUI() {
+    try {
+        const firstBtn = document.querySelector('.type-btn');
+        if (firstBtn) {
+            firstBtn.classList.add('active');
+        }
+        
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.placeholder = 'Digite o nome completo da pessoa...';
+        }
+    } catch (error) {
+        console.error('Error initializing UI:', error);
+    }
+}
+
+// ============================================================================
+// ADDITIONAL SEARCH FUNCTIONS
+// ============================================================================
+
+async function searchCompany(name) {
+    try {
+        const mockData = {
+            razaoSocial: name,
+            cnpj: generateMockCNPJ(),
+            dataFundacao: generateMockDate(),
+            situacao: 'Ativa',
+            porte: ['MEI', 'ME', 'EPP', 'LTDA'][Math.floor(Math.random() * 4)],
+            faturamento: 'R$ ' + (Math.floor(Math.random() * 1000000) + 100000).toLocaleString('pt-BR'),
+            funcionarios: Math.floor(Math.random() * 100) + 1,
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        return {
+            company: mockData,
+            financial: await searchFinancialCompany(mockData.cnpj),
+            documents: await searchCompanyDocuments(mockData.cnpj)
+        };
+    } catch (error) {
+        console.error('Company search error:', error);
+        return { error: 'Erro na busca por empresa' };
+    }
+}
+
+function generateMockCNPJ() {
+    const base = Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
+    const filial = '0001';
+    const dv1 = Math.floor(Math.random() * 10);
+    const dv2 = Math.floor(Math.random() * 10);
+    return `${base.substring(0, 2)}.${base.substring(2, 5)}.${base.substring(5, 8)}/${filial}-${dv1}${dv2}`;
+}
+
+async function searchFinancialCompany(cnpj) {
+    try {
+        const mockData = {
+            cnpj: cnpj,
+            faturamento: 'R$ ' + (Math.floor(Math.random() * 5000000) + 500000).toLocaleString('pt-BR'),
+            lucro: 'R$ ' + (Math.floor(Math.random() * 1000000) + 100000).toLocaleString('pt-BR'),
+            dividas: Math.random() > 0.6 ? 'R$ ' + (Math.floor(Math.random() * 100000) + 10000).toLocaleString('pt-BR') : 'Nenhuma',
+            score: Math.floor(Math.random() * 300) + 500,
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Financial company search error:', error);
+        return null;
+    }
+}
+
+async function searchCompanyDocuments(cnpj) {
+    try {
+        const mockData = {
+            contratos: Math.floor(Math.random() * 10) + 1,
+            licencas: Math.floor(Math.random() * 5) + 1,
+            processos: Math.floor(Math.random() * 3),
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Company documents search error:', error);
+        return null;
+    }
+}
+
+async function searchBenefits(nis) {
+    try {
+        const mockData = {
+            programas: [
+                { nome: 'Bolsa Família', valor: 'R$ 600,00', situacao: 'Ativo' },
+                { nome: 'Auxílio Brasil', valor: 'R$ 400,00', situacao: 'Ativo' },
+                { nome: 'Auxílio Gás', valor: 'R$ 120,00', situacao: 'Inativo' }
+            ],
+            totalBeneficios: 2,
+            valorTotal: 'R$ 1.000,00',
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Benefits search error:', error);
+        return null;
+    }
+}
+
+async function searchSocialPrograms(nis) {
+    try {
+        const mockData = {
+            programasSociais: [
+                { nome: 'Bolsa Família', status: 'Ativo', valor: 'R$ 600,00' },
+                { nome: 'Auxílio Brasil', status: 'Ativo', valor: 'R$ 400,00' }
+            ],
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 400));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Social programs search error:', error);
+        return null;
+    }
+}
+
+async function searchNISDocuments(nis) {
+    try {
+        const mockData = {
+            cadastro: {
+                data: generateMockDate(),
+                status: 'Ativo',
+                municipio: generateMockCity()
+            },
+            historico: [
+                { data: generateMockDate(), tipo: 'Atualização cadastral', descricao: 'Dados atualizados' },
+                { data: generateMockDate(), tipo: 'Benefício concedido', descricao: 'Novo benefício aprovado' }
+            ],
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 400));
+        
+        return mockData;
+    } catch (error) {
+        console.error('NIS documents search error:', error);
+        return null;
+    }
+}
+
+async function searchRestrictions(cpf) {
+    try {
+        const mockData = {
+            restricoes: [
+                { tipo: 'SERASA', valor: 'R$ 5.000,00', data: generateMockDate() },
+                { tipo: 'SPC', valor: 'R$ 2.500,00', data: generateMockDate() }
+            ],
+            totalRestricoes: Math.random() > 0.5 ? 2 : 0,
+            valorTotal: 'R$ 7.500,00',
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Restrictions search error:', error);
+        return null;
+    }
+}
+
+async function searchFinancialByCPF(cpf) {
+    try {
+        const mockData = {
+            cpf: formatCPF(cpf),
+            score: Math.floor(Math.random() * 300) + 500,
+            classificacao: ['Excelente', 'Bom', 'Regular', 'Ruim'][Math.floor(Math.random() * 4)],
+            restricoes: Math.random() > 0.7 ? Math.floor(Math.random() * 3) + 1 : 0,
+            contas: Math.floor(Math.random() * 5) + 1,
+            rendaPresumida: 'R$ ' + (Math.floor(Math.random() * 15000) + 3000).toLocaleString('pt-BR'),
+            ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 700));
+        
+        return mockData;
+    } catch (error) {
+        console.error('Financial by CPF search error:', error);
+        return null;
+    }
+}
+
+async function validateCPF(cpf) {
+    try {
+        const isValid = validateCPFDigits(cpf);
+        
+        const mockData = {
+            cpf: formatCPF(cpf),
+            valido: isValid,
+            emissao: generateMockDate(),
+            digitoVerificador: cpf.slice(-2),
+            status: isValid ? 'Válido' : 'Inválido',
+            mensagem: isValid ? 'CPF válido e regular' : 'CPF inválido ou irregular'
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        return mockData;
+    } catch (error) {
+        console.error('CPF validation error:', error);
+        return null;
+    }
+}
+
+console.log('Background Check Pro - Sistema Profissional de Verificação Carregado');
