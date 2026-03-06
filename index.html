@@ -372,6 +372,44 @@
             font-size: 12px;
         }
         
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #00ff41;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #ff5f56;
+            color: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        .results-section {
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
         .loading-skeleton {
             background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
             background-size: 200% 100%;
@@ -755,7 +793,7 @@
             
             <div class="risk-meter">
                 <div class="risk-bar">
-                    <div class="risk-fill" id="riskFill"></div>
+                    <div class="risk-fill" id="riskMeter"></div>
                 </div>
                 <div class="risk-percentage" id="riskPercentage">0%</div>
             </div>
@@ -785,8 +823,25 @@
             <h2 class="timeline-title">
                 <i class="fas fa-clock"></i> Linha do Tempo
             </h2>
-            <div id="timelineContent">
+            <div id="timeline">
                 <!-- Timeline items will be populated here -->
+            </div>
+        </div>
+        
+        <!-- LOADING STATE -->
+        <div class="loading-state" id="loadingState" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Processando verificação...</p>
+        </div>
+        
+        <!-- ERROR MESSAGE -->
+        <div class="error-message" id="errorMessage" style="display: none;"></div>
+        
+        <!-- RESULTS SECTION -->
+        <div class="results-section" id="results" style="display: none;">
+            <h3>📋 Resultados Detalhados</h3>
+            <div id="detailedResults">
+                <!-- Results will be populated here -->
             </div>
         </div>
     </div>
