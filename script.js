@@ -1,11 +1,15 @@
 // ============================================================================
 // BACKGROUND CHECK PRO - Professional Verification System
 // Real-time data mining with Portal da Transparência integration
-// Civil Registry ML Analysis
+// Netlify Backend Compatible
 // ============================================================================
 
-// Services are loaded via script tags in HTML
-// CivilRegistryService and MLAnalysisService are available from window scope
+// API Base URL - Uses Netlify Functions when deployed
+var API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? '/.netlify/functions' 
+    : '/.netlify/functions';
+
+// Services available from window scope (loaded via script tags)
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeBackgroundCheckPro();
@@ -141,20 +145,24 @@ async function searchByCPF(cpf) {
             throw new Error('CPF invalido');
         }
         
+        // Call Netlify Function for CPF search
+        var response = await fetch(API_BASE_URL + '/cpf?cpf=' + cleanCPF);
+        var data = await response.json();
+        
         var results = {
             personal: {
                 cpf: formatCPF(cleanCPF),
-                nome: 'Pesquisando CPF...',
-                dataNascimento: 'Aguardando dados',
-                situacao: 'Em processamento',
+                nome: data.data?.nome || 'Pesquisando CPF...',
+                dataNascimento: data.data?.dataNascimento || 'Aguardando dados',
+                situacao: data.data?.situacao || 'Em processamento',
                 fonte: 'Portal da Transparência',
                 ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
             },
             documents: {
                 cpf: formatCPF(cleanCPF),
-                valido: cleanCPF.length === 11,
+                valido: data.data?.valido || cleanCPF.length === 11,
                 emissao: 'Aguardando dados',
-                status: 'Em processamento'
+                status: data.data?.situacao || 'Em processamento'
             },
             financial: {
                 cpf: formatCPF(cleanCPF),
@@ -321,10 +329,14 @@ async function searchInstagram(username) {
     try {
         var cleanUsername = username.replace('@', '');
         
+        // Call Netlify Function for Instagram search
+        var response = await fetch(API_BASE_URL + '/instagram?username=' + cleanUsername);
+        var data = await response.json();
+        
         var results = {
             username: cleanUsername,
             perfil: {
-                nome: 'Pesquisando...',
+                nome: data.data?.username || cleanUsername,
                 bio: 'Aguardando dados do Instagram',
                 seguidores: 0,
                 seguindo: 0,
@@ -1476,13 +1488,17 @@ async function searchPhone(phone) {
     try {
         var cleanPhone = phone.replace(/[^\d]/g, '');
         
+        // Call Netlify Function for phone search
+        var response = await fetch(API_BASE_URL + '/phone?phone=' + cleanPhone);
+        var data = await response.json();
+        
         var results = {
-            telefone: formatPhone(cleanPhone),
-            valido: cleanPhone.length >= 10,
-            operadora: 'Aguardando dados',
-            tipo: 'Móvel',
-            estado: 'Aguardando dados',
-            cidade: 'Aguardando dados',
+            telefone: data.data?.telefone || formatPhone(cleanPhone),
+            valido: data.data?.valido || cleanPhone.length >= 10,
+            operadora: data.data?.operadora || 'Aguardando dados',
+            tipo: data.data?.tipo || 'Móvel',
+            estado: data.data?.estado || 'Aguardando dados',
+            cidade: data.data?.cidade || 'Aguardando dados',
             ultimaAtualizacao: new Date().toLocaleDateString('pt-BR'),
             fonte: 'Phone Validation API'
         };
@@ -1501,13 +1517,17 @@ async function searchEmail(email) {
             throw new Error('Email invalido');
         }
         
+        // Call Netlify Function for email search
+        var response = await fetch(API_BASE_URL + '/email?email=' + encodeURIComponent(email));
+        var data = await response.json();
+        
         var results = {
             email: email,
-            valido: 'Em processamento',
-            dominio: email.split('@')[1],
-            provedor: 'Aguardando dados',
+            valido: data.data?.valido || 'Em processamento',
+            dominio: data.data?.dominio || email.split('@')[1],
+            provedor: data.data?.provedor || 'Aguardando dados',
             pontuacao: 0,
-            risco: 'Aguardando dados',
+            risco: data.data?.risco || 'Aguardando dados',
             fontes: [],
             ultimaAtualizacao: new Date().toLocaleDateString('pt-BR'),
             fonte: 'Email Validation API'
@@ -1680,13 +1700,16 @@ async function searchPersonWithCivilRegistry(name) {
     try {
         showLoadingState();
         
-        // Return real results structure
+        // Call Netlify Function for person search
+        var response = await fetch(API_BASE_URL + '/person?name=' + encodeURIComponent(name));
+        var data = await response.json();
+        
         var results = {
             personal: {
                 nome: name,
-                cpf: 'Pesquisando...',
-                dataNascimento: 'Aguardando dados',
-                situacao: 'Em processamento',
+                cpf: data.data?.portalTransparencia?.[0]?.cpf || 'Pesquisando...',
+                dataNascimento: data.data?.portalTransparencia?.[0]?.dataNascimento || 'Aguardando dados',
+                situacao: data.data?.portalTransparencia?.[0]?.situacao || 'Em processamento',
                 fonte: 'Portal da Transparência',
                 ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
             },
