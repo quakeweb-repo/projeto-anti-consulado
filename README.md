@@ -10,13 +10,14 @@ Sistema profissional para agentes de modernização predial da Prefeitura de Sã
 - **Oportunidades de Modernização**: Sugestões focadas em segurança predial.
 - **Dados Geográficos**: Integração com GEOSAMPA para riscos e edificações.
 - **Scraping Legal**: Extração de conteúdo de sites oficiais.
-- **Mineração On-Demand**: A interface usa seis caixas principais que agrupam um conjunto de webservices/OSINT Brazuca:
+- **Mineração On-Demand**: A interface usa sete caixas principais que agrupam um conjunto de webservices/OSINT Brazuca:
   1. **Infraestrutura** – GeoSampa, Prefeitura, cadastro imobiliário;
   2. **Redes Sociais** – Twitter, Facebook, Instagram (coletados pelo OSINT Brazuca);
   3. **Busca Web** – Google, YouTube, notícias;
   4. **Documentos** – SEI, AVCB, licenças;
   5. **Fiscal/Tributos** – CNPJ, IPTU, regime diplomático;
-  6. **Segurança** – saídas de incêndio, riscos geológicos.
+  6. **Segurança** – saídas de incêndio, riscos geológicos;
+  7. **CNPJ/CPF** – Dados cadastrais do consulado (padrão: 54.016.822/0001-82).
 
   Cada caixa dispara `fetch('/api/osint/<categoria>?live=1')` para o servidor hospedado na codespace. O backend agrega diversas fontes (Twitter, Google, GeoSampa, Prefeitura) e devolve os dados agrupados por origem.
 - **Exportação de Relatórios**: Geração de JSON para registros oficiais.
@@ -38,6 +39,14 @@ Exclusivo para delegados e agentes autorizados. Todas as operações são basead
 - Backend: Node.js / Express
 - Frontend: Bootstrap 5, Font Awesome
 - APIs: GEOSAMPA, Nominatim, Scraping com Cheerio
+
+## GitHub Pages Deployment
+
+O sistema está configurado para deploy automático no GitHub Pages via Actions. Acesse:
+- **Live Demo**: https://jubilant-barnacle-v6jq4xvxgjq62qxx-3000.app.github.dev
+- **GitHub Pages**: https://quakeweb-repo.github.io/projeto-anti-consulado/
+
+O workflow `.github/workflows/deploy.yml` automatiza o deploy da branch `main` para `gh-pages`.
 
 ## Publicação
 
