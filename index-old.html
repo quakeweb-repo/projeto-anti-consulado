@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema OSINT - Análise Predial Consulado Americano em São Paulo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #005b96 100%);
+            color: white;
+            padding: 25px 0;
+            border-bottom: 4px solid #ffc107;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        header h1 {
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        header p { font-size: 14px; opacity: 0.95; margin-bottom: 0; }
+        header .meta { font-size: 12px; opacity: 0.85; margin-top: 8px; }
+        
+        .section-card {
+            border: none;
+            border-left: 5px solid #1e3c72;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+        .section-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        
+        .section-header {
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-header i { font-size: 18px; }
+        
+        .header-busca { background-color: #007bff; }
+        .header-irregularidades { background-color: #dc3545; }
+        .header-oportunidades { background-color: #28a745; }
+        .header-geo { background-color: #17a2b8; }
+        .header-fontesinfo { background-color: #6c757d; }
+        .header-mining { background-color: #ffc107; }
+
+        .mining-box {
+            border: 2px dashed #ffc107;
+            padding: 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #fff;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .mining-box:hover {
+            background-color: #fff9e6;
+            transform: translateY(-2px);
+        }
+        .mining-box i {
+            color: #ffc107;
+            margin-bottom: 8px;
+        }
+        .mining-box div {
+            font-weight: 600;
+            margin-top: 4px;
+            font-size: 14px;
+        }
+        
+        .alert-irregularidade {
+            border-left: 4px solid #dc3545;
+            background-color: #fff5f5;
+            color: #721c24;
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            border-radius: 3px;
+        }
+        .alert-irregularidade i { margin-right: 8px; color: #dc3545; font-weight: bold; }
+        
+        .check-opportunity {
+            border-left: 4px solid #28a745;
+            background-color: #f0f8f4;
+            color: #155724;
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .check-opportunity i { color: #28a745; font-size: 16px; }
+        
+        .btn-primary { 
+            background-color: #007bff;
+            border-color: #007bff;
+            padding: 8px 20px;
+            font-weight: 500;
+        }
+        .btn-primary:hover { 
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        
+        .btn-secondary { 
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #5a6268;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+        
+        .auth-info {
+            background-color: #cfe2f3;
+            border-left: 4px solid #1e3c72;
+            color: #0c3866;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        .auth-info i { margin-right: 8px; }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .data-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        
+        .data-box h6 {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .data-box p {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: #495057;
+        }
+        
+        .detail-btn {
+            margin-top: 10px;
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+        
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 30px;
+            font-size: 12px;
+            border-top: 2px solid #1e3c72;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .badge-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .badge-crítico { background-color: #dc3545; color: white; }
+        .badge-alto { background-color: #fd7e14; color: white; }
+        .badge-médio { background-color: #ffc107; color: #333; }
+        .badge-baixo { background-color: #28a745; color: white; }
+        
+        .risk-table {
+            font-size: 13px;
+            margin-top: 15px;
+        }
+        
+        .risk-table td, .risk-table th {
+            padding: 8px;
+            vertical-align: middle;
+        }
+        
+        .risk-severity {
+            font-weight: 600;
+        }
+        
+        .severity-critico { color: #dc3545; }
+        .severity-alto { color: #fd7e14; }
+        .severity-medio { color: #ffc107; }
+        .severity-baixo { color: #28a745; }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .modal-dialog-scrollable {
+            max-height: 80vh;
+        }
+        
+        .cnpj-info {
+            background-color: #e7f3ff;
+            border-left: 5px solid #0056b3;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 3px;
+        }
+        
+        .cnpj-info strong {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-9">
+                    <h1><i class="fas fa-building"></i> Sistema OSINT - Análise Predial</h1>
+                    <p><strong>Consulado-Geral dos EUA em São Paulo </strong> - Rua Henri Durant 500, São Paulo, SP, 04709-110</p>
+                    <div class="meta">
+                        <div><i class="fas fa-search"></i> Mineração OSINT de Irregularidades Prediais, Fiscais e Contábeis</div>
+                        <div><i class="fas fa-shield-alt"></i> Operador: SGP/PMSP - Análise Predial e Conformidades</div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <div style="background-color: rgba(255,255,255,0.15); padding: 15px; border-radius: 4px;">
+                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">24 km</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Distância do Centro | Zona 03-25</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 8px; color: #ffc107;">⚠ CRÍTICO</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mt-4">
+        <div class="auth-info">
+            <i class="fas fa-lock"></i> <strong>Acesso Autorizado:</strong> Sistema restrito para agentes de modernização predial da Prefeitura de São Paulo e órgãos da Polícia Civil (PMSP/SGP/DETPLAT). Todas as análises utilizam exclusivamente fontes abertas (OSINT) e conformes à LGPD. Proibida divulgação não-autorizada.
+        </div>
+        
+        <!-- INFORMAÇÕES CNPJ E FISCAL -->
+        <div class="cnpj-info">
+            <h6 class="mb-2"><i class="fas fa-file-invoice"></i> Informações Fiscais e Cadastrais</h6>
+            <div class="row" style="font-size: 13px;">
+                <div class="col-md-3"><strong>CNPJ:</strong> 54.016.822/0001-82 (Serviços Diplomáticos EUA)</div>
+                <div class="col-md-3"><strong>Inscrição Estadual:</strong> Isenta (Protocolo Diplomático)</div>
+                <div class="col-md-3"><strong>Situação Cadastral:</strong> Regular/Ativa</div>
+                <div class="col-md-3"><strong>Regime Tributário:</strong> Imunidade Diplomática</div>
+            </div>
+        </div>
+
+        <!-- BUSCA ON DEMAND -->
+        <div class="section-card">
+            <div class="section-header header-busca">
+                <i class="fas fa-search-plus"></i> Busca On Demand de Irregularidades
+            </div>
+            <div class="section-card" style="border-left: none;">
+                <div class="p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="address-input" class="form-label fw-600"><i class="fas fa-map-marker-alt"></i> Endereço:</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="address-input" 
+                                value="Rua Henri Durant 500, São Paulo, SP, 04709-110"
+                                readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sei-input" class="form-label fw-600"><i class="fas fa-search"></i> Busca SEI:</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="sei-input" 
+                                placeholder="conformidade, reforma, estrutural, construção">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="period-input" class="form-label fw-600"><i class="fas fa-calendar"></i> Período:</label>
+                            <select class="form-select" id="period-input">
+                                <option value="all">Últimos 6 anos</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                                <option value="2022">2022</option>
+                                <option value="2020-2021">2020-2021</option>
+                                <option value="2015-2019">2015-2019</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="type-input" class="form-label fw-600"><i class="fas fa-filter"></i> Tipo:</label>
+                            <select class="form-select" id="type-input">
+                                <option value="all">Todos os tipos</option>
+                                <option value="predial">Irregularidades Prediais</option>
+                                <option value="fiscal">Questões Fiscais</option>
+                                <option value="ambiental">Conformidade Ambiental</option>
+                                <option value="seguranca">Segurança Estrutural</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button class="btn btn-primary me-2" onclick="loadAnalysis()">
+                                <i class="fas fa-play"></i> Analisar Imóvel
+                            </button>
+                            <button class="btn btn-secondary me-2" onclick="searchSEI()">
+                                <i class="fas fa-file-alt"></i> Buscar no SEI (Processos)
+                            </button>
+                            <button class="btn btn-info me-2" onclick="checkCNPJ()">
+                                <i class="fas fa-search-dollar"></i> Validar CNPJ/Fiscal
+                            </button>
+                            <button class="btn btn-success" onclick="exportReport()">
+                                <i class="fas fa-download"></i> Exportar Relatório PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IRREGULARIDADES E OPORTUNIDADES -->
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header header-irregularidades">
+                        <i class="fas fa-exclamation-circle"></i> Irregularidades Identificadas
+                    </div>
+                    <div class="p-4">
+                        <div id="irregularities-list">
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando análise...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header header-oportunidades">
+                        <i class="fas fa-tools"></i> Oportunidades de Modernização
+                    </div>
+                    <div class="p-4">
+                        <div id="opportunities-list">
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando análise...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTAS DE MINERAÇÃO ON-DEMAND (CAIXAS VISÍVEIS ACIMA) -->
+        <div class="section-card">
+            <div class="section-header header-mining">
+                <i class="fas fa-tools"></i> Ferramentas de Mineração (clique para explorar)
+            </div>
+            <div class="p-4 text-center">
+                <div class="row justify-content-center">
+                    <div class="col-6 col-sm-4 col-md-3 mb-3">
+                        <div class="mining-box" onclick="mineOsint('infraestrutura','Infraestrutura')">
+                            <i class="fas fa-building fa-2x"></i>
+                            <div>Infraestrutura</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 mb-3">
+                        <div class="mining-box" onclick="mineOsint('redes','Redes Sociais')">
+                            <i class="fas fa-hashtag fa-2x"></i>
+                            <div>Redes</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 mb-3">
+                        <div class="mining-box" onclick="mineOsint('web','Busca Web')">
+                            <i class="fas fa-search fa-2x"></i>
+                            <div>Web</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 mb-3">
+                        <div class="mining-box" onclick="mineOsint('documentos','Documentos')">
+                            <i class="fas fa-file-alt fa-2x"></i>
+                            <div>Documentos</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 mb-3">
+                        <div class="mining-box" onclick="mineOsint('fiscal','Fiscal/Tributos')">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                            <div>Fiscal</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 mb-3">
+                        <div class="mining-box" onclick="mineOsint('seguranca','Segurança')">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                            <div>Segurança</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 mb-3">
+                        <div class="mining-box" onclick="mineOsint('cnpj','CNPJ/CPF')" style="border-color: #28a745; background-color: #f0f8f4;">
+                            <i class="fas fa-id-card fa-2x" style="color: #28a745;"></i>
+                            <div>CNPJ/CPF</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DADOS GEOGRÁFICOS E RISCOS -->
+        <div class="section-card">
+            <div class="section-header header-geo">
+                <i class="fas fa-map-marked-alt"></i> Dados Geográficos e Riscos
+            </div>
+            <div class="p-4">
+                <div id="geo-data" class="data-grid">
+                    <div class="text-center py-4 text-muted col-12">
+                        <i class="fas fa-spinner fa-spin"></i> Carregando dados do GEOSAMPA...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMAÇÕES DE SEGURANÇA E FONTES -->
+        <div class="section-card">
+            <div class="section-header header-fontesinfo">
+                <i class="fas fa-shield-alt"></i> Informações de Segurança e Fontes
+            </div>
+            <div class="p-4">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h6 class="fw-600 mb-3">Fontes Oficiais:</h6>
+                        <div class="list-group">
+                            <button class="list-group-item text-start py-2" onclick="scrapeSite('consulado')">
+                                <i class="fas fa-external-link-alt me-2"></i> Informações do Consulado
+                            </button>
+                            <button class="list-group-item text-start py-2" onclick="scrapeSite('vistos')">
+                                <i class="fas fa-external-link-alt me-2"></i> Informações de Vistos
+                            </button>
+                            <button class="list-group-item text-start py-2" onclick="scrapeSite('embaixada')">
+                                <i class="fas fa-external-link-alt me-2"></i> Embaixada em Brasília
+                            </button>
+                            <button class="list-group-item text-start py-2" onclick="scrapeSite('pmsp')">
+                                <i class="fas fa-external-link-alt me-2"></i> Registros PMSP
+                            </button>
+                            <!-- novos recursos conforme exigido pela UI -->
+                            <button class="list-group-item text-start py-2" onclick="fetchStructureDocs()">
+                                <i class="fas fa-file-contract me-2"></i> Documentos Estruturais (estado físico)
+                            </button>
+                            <button class="list-group-item text-start py-2" onclick="fetchChiefMembers()">
+                                <i class="fas fa-users me-2"></i> Membros-Chefe do Consulado
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <h6 class="fw-600 mb-3">Conteúdo Extraído:</h6>
+                        <div id="scraped-content" class="border p-3" style="max-height: 250px; overflow-y: auto; background-color: #f8f9fa;">
+                            <p class="text-muted small mb-0">Selecione uma fonte para visualizar conteúdo OSINT.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Sistema OSINT - Prefeitura de São Paulo / SGP / Polícia Civil. Uso exclusivo para modernização predial e segurança pública.</p>
+    </footer>
+
+    <!-- modal usado para exibir resultados de mineração on-demand -->
+    <div class="modal fade" id="miningModal" tabindex="-1" aria-labelledby="miningModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="miningModalTitle">Resultado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="miningModalBody" style="font-size:14px;"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">/workspaces/projeto-anti-consulado/index.html
