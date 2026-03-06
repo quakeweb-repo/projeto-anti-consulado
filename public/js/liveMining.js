@@ -1,18 +1,24 @@
 // ============================================================================
 // LIVE AJAX MINING - Real-time Data Processing
 // Background Check Pro - Superior to BuscaPrime
+// GitHub Pages Compatible Version
 // ============================================================================
 
 class LiveMiningManager {
     constructor() {
         this.activeRequests = new Map();
         this.updateIntervals = new Map();
-        this.websocketConnections = new Map();
         this.cache = new Map();
         this.retryAttempts = new Map();
         this.maxRetries = 3;
         this.updateInterval = 5000; // 5 seconds
+        this.isGitHubPages = this.detectGitHubPages();
         this.init();
+    }
+
+    detectGitHubPages() {
+        return window.location.hostname === 'quakeweb-repo.github.io' || 
+               window.location.hostname.includes('github.io');
     }
 
     init() {
@@ -73,7 +79,12 @@ class LiveMiningManager {
 
     setupWebSocketListeners() {
         // WebSocket connection for real-time mining updates
-        this.connectWebSocket();
+        // Skip WebSocket on GitHub Pages (static hosting)
+        if (!this.isGitHubPages) {
+            this.connectWebSocket();
+        } else {
+            console.log('GitHub Pages detected - using polling instead of WebSocket');
+        }
     }
 
     connectWebSocket() {
@@ -147,27 +158,32 @@ class LiveMiningManager {
         this.startProgressTracking(requestId);
 
         try {
-            // Determine appropriate endpoint
-            const endpoint = this.getEndpoint(searchType, query);
-            
-            // Make initial request
-            const response = await this.makeLiveRequest(endpoint, {
-                query,
-                type: searchType,
-                depth,
-                state,
-                requestId,
-                live: true
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                this.handleInitialResponse(data, requestId);
-                
-                // Start live updates
-                this.startLiveUpdates(requestId, data);
+            // For GitHub Pages, use mock data with simulation
+            if (this.isGitHubPages) {
+                await this.simulateLiveSearch(query, searchType, depth, state, requestId);
             } else {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // Determine appropriate endpoint
+                const endpoint = this.getEndpoint(searchType, query);
+                
+                // Make initial request
+                const response = await this.makeLiveRequest(endpoint, {
+                    query,
+                    type: searchType,
+                    depth,
+                    state,
+                    requestId,
+                    live: true
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.handleInitialResponse(data, requestId);
+                    
+                    // Start live updates
+                    this.startLiveUpdates(requestId, data);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
             }
         } catch (error) {
             this.handleSearchError(error, requestId);
@@ -193,13 +209,20 @@ class LiveMiningManager {
         }
 
         try {
-            const endpoint = this.getValidationEndpoint(searchType);
-            const response = await fetch(`${endpoint}/${encodeURIComponent(value)}`);
-            
-            if (response.ok) {
-                const data = await response.json();
-                this.cache.set(cacheKey, data);
-                this.showValidationResults(data);
+            if (this.isGitHubPages) {
+                // Mock validation for GitHub Pages
+                const mockData = this.getMockValidationData(searchType, value);
+                this.cache.set(cacheKey, mockData);
+                this.showValidationResults(mockData);
+            } else {
+                const endpoint = this.getValidationEndpoint(searchType);
+                const response = await fetch(`${endpoint}/${encodeURIComponent(value)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.cache.set(cacheKey, data);
+                    this.showValidationResults(data);
+                }
             }
         } catch (error) {
             // Silently fail validation
@@ -803,6 +826,172 @@ class LiveMiningManager {
             'warning': 'exclamation-circle'
         };
         return icons[type] || 'info-circle';
+    }
+
+    // ============================================================================
+    // GITHUB PAGES MOCK DATA
+    // ============================================================================
+
+    async simulateLiveSearch(query, searchType, depth, state, requestId) {
+        // Simulate processing time
+        const totalSteps = this.getTotalSteps();
+        
+        for (let step = 1; step <= totalSteps; step++) {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            const progressData = {
+                requestId,
+                step,
+                totalSteps,
+                status: step === totalSteps ? 'complete' : 'running',
+                partialResults: this.getMockPartialResults(searchType, query, step),
+                timestamp: new Date().toISOString()
+            };
+            
+            this.updateMiningProgress(progressData);
+        }
+        
+        // Final results
+        const finalResults = this.getMockFinalResults(searchType, query, depth, state);
+        this.handleMiningComplete({
+            requestId,
+            finalResults,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    getMockValidationData(searchType, value) {
+        switch (searchType) {
+            case 'cpf':
+                return {
+                    original: value,
+                    cleaned: value.replace(/[^\d]/g, ''),
+                    isValid: /^\d{11}$/.test(value.replace(/[^\d]/g, '')),
+                    suggestions: [],
+                    errors: []
+                };
+            case 'instagram':
+                const cleaned = value.replace('@', '').trim().toLowerCase();
+                return {
+                    original: value,
+                    cleaned: cleaned,
+                    isValid: /^[a-z0-9._]{1,30}$/.test(cleaned),
+                    suggestions: cleaned.length < 3 ? [] : [`${cleaned}_official`, `the_${cleaned}`],
+                    errors: cleaned.length < 3 ? ['Username too short'] : []
+                };
+            default:
+                return { original: value, isValid: true, suggestions: [], errors: [] };
+        }
+    }
+
+    getMockPartialResults(searchType, query, step) {
+        const results = {};
+        
+        if (step >= 2) {
+            results.personal = {
+                id: 'personal',
+                type: 'personal',
+                title: 'Informações Pessoais',
+                status: 'complete',
+                data: {
+                    name: query,
+                    cpf: this.generateMockCPF(),
+                    status: 'Regular',
+                    lastUpdated: new Date().toLocaleDateString('pt-BR')
+                }
+            };
+        }
+        
+        if (step >= 4) {
+            results.instagram = {
+                id: 'instagram',
+                type: 'instagram',
+                title: 'Instagram Analysis',
+                status: 'complete',
+                data: {
+                    followers: Math.floor(Math.random() * 50000) + 1000,
+                    following: Math.floor(Math.random() * 5000) + 100,
+                    posts: Math.floor(Math.random() * 1000) + 50,
+                    engagementRate: (Math.random() * 5 + 1).toFixed(2) + '%'
+                }
+            };
+        }
+        
+        if (step >= 6) {
+            results.social = {
+                id: 'social',
+                type: 'social',
+                title: 'Redes Sociais',
+                status: 'complete',
+                data: {
+                    platforms: ['LinkedIn', 'Facebook', 'Twitter'],
+                    profiles: Math.floor(Math.random() * 5) + 1,
+                    riskLevel: 'low'
+                }
+            };
+        }
+        
+        if (step >= 8) {
+            results.financial = {
+                id: 'financial',
+                type: 'financial',
+                title: 'Informações Financeiras',
+                status: 'complete',
+                data: {
+                    score: Math.floor(Math.random() * 300) + 500,
+                    restrictions: Math.random() > 0.7 ? 1 : 0,
+                    accounts: Math.floor(Math.random() * 3) + 1
+                }
+            };
+        }
+        
+        return results;
+    }
+
+    getMockFinalResults(searchType, query, depth, state) {
+        return {
+            query,
+            searchType,
+            depth,
+            state,
+            timestamp: new Date().toISOString(),
+            results: {
+                personal: {
+                    name: query,
+                    cpf: this.generateMockCPF(),
+                    status: 'Regular',
+                    lastUpdated: new Date().toLocaleDateString('pt-BR')
+                },
+                instagram: {
+                    username: query.toLowerCase().replace(/\s/g, '_'),
+                    followers: Math.floor(Math.random() * 50000) + 1000,
+                    following: Math.floor(Math.random() * 5000) + 100,
+                    posts: Math.floor(Math.random() * 1000) + 50,
+                    engagementRate: (Math.random() * 5 + 1).toFixed(2) + '%',
+                    verified: Math.random() > 0.8,
+                    businessAccount: Math.random() > 0.6
+                },
+                risk: {
+                    score: Math.floor(Math.random() * 60) + 20,
+                    level: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+                    alerts: [
+                        { type: 'info', message: 'Perfil verificado com sucesso' },
+                        { type: 'warning', message: 'Baixa atividade recente detectada' }
+                    ]
+                },
+                timeline: [
+                    { date: new Date().toISOString(), event: 'Análise iniciada' },
+                    { date: new Date(Date.now() - 86400000).toISOString(), event: 'Dados atualizados' }
+                ]
+            }
+        };
+    }
+
+    generateMockCPF() {
+        const base = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+        const dv1 = Math.floor(Math.random() * 10);
+        const dv2 = Math.floor(Math.random() * 10);
+        return `${base.substring(0, 3)}.${base.substring(3, 6)}.${base.substring(6, 9)}-${dv1}${dv2}`;
     }
 }
 

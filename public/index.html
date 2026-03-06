@@ -3,421 +3,1210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema OSINT - Análise Predial Consulado Americano em São Paulo</title>
+    <title>Background Check Pro - Sistema Profissional de Verificação</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body { 
-            background-color: #f0f2f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
+            background: #0a0a0a;
+            font-family: 'JetBrains Mono', monospace;
+            color: #00ff41;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
-        header {
-            background: linear-gradient(135deg, #1e3c72 0%, #005b96 100%);
-            color: white;
-            padding: 25px 0;
-            border-bottom: 4px solid #ffc107;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        header h1 {
-            font-weight: 700;
-            font-size: 28px;
-            margin-bottom: 5px;
-            letter-spacing: 0.5px;
-        }
-        header p { font-size: 14px; opacity: 0.95; margin-bottom: 0; }
-        header .meta { font-size: 12px; opacity: 0.85; margin-top: 8px; }
         
-        .section-card {
-            border: none;
-            border-left: 5px solid #1e3c72;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-            transition: box-shadow 0.3s ease;
-        }
-        .section-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-        
-        .section-header {
+        .terminal-header {
+            background: #1a1a1a;
+            border: 2px solid #00ff41;
+            border-bottom: none;
             padding: 15px 20px;
-            font-weight: 600;
-            font-size: 16px;
-            color: white;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        .section-header i { font-size: 18px; }
         
-        .header-busca { background-color: #007bff; }
-        .header-irregularidades { background-color: #dc3545; }
-        .header-oportunidades { background-color: #28a745; }
-        .header-geo { background-color: #17a2b8; }
-        .header-fontesinfo { background-color: #6c757d; }
-        .header-mining { background-color: #ffc107; }
-
-        .mining-box {
-            border: 2px dashed #ffc107;
-            padding: 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            background-color: #fff;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-        }
-        .mining-box:hover {
-            background-color: #fff9e6;
-            transform: translateY(-2px);
-        }
-        .mining-box i {
-            color: #ffc107;
-            margin-bottom: 8px;
-        }
-        .mining-box div {
-            font-weight: 600;
-            margin-top: 4px;
-            font-size: 14px;
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
         }
         
-        .alert-irregularidade {
-            border-left: 4px solid #dc3545;
-            background-color: #fff5f5;
-            color: #721c24;
-            margin-bottom: 12px;
-            padding: 12px 15px;
-            border-radius: 3px;
-        }
-        .alert-irregularidade i { margin-right: 8px; color: #dc3545; font-weight: bold; }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
         
-        .check-opportunity {
-            border-left: 4px solid #28a745;
-            background-color: #f0f8f4;
-            color: #155724;
-            margin-bottom: 12px;
-            padding: 12px 15px;
-            border-radius: 3px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .check-opportunity i { color: #28a745; font-size: 16px; }
-        
-        .btn-primary { 
-            background-color: #007bff;
-            border-color: #007bff;
-            padding: 8px 20px;
-            font-weight: 500;
-        }
-        .btn-primary:hover { 
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-        
-        .btn-secondary { 
-            background-color: #6c757d;
-            border-color: #6c757d;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-            border-color: #5a6268;
-        }
-        
-        .btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-            border-color: #218838;
-        }
-        
-        .auth-info {
-            background-color: #cfe2f3;
-            border-left: 4px solid #1e3c72;
-            color: #0c3866;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 3px;
-            font-size: 14px;
-        }
-        
-        .auth-info i { margin-right: 8px; }
-        
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .data-box {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 15px;
-            border-radius: 4px;
-        }
-        
-        .data-box h6 {
-            font-weight: 600;
-            color: #1e3c72;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .data-box p {
-            margin-bottom: 0;
-            font-size: 14px;
-            color: #495057;
-        }
-        
-        .detail-btn {
-            margin-top: 10px;
-            padding: 5px 12px;
-            font-size: 12px;
-        }
-        
-        footer {
-            background-color: #2c3e50;
-            color: white;
+        .terminal-title {
+            flex: 1;
             text-align: center;
-            padding: 15px;
-            margin-top: 30px;
-            font-size: 12px;
-            border-top: 2px solid #1e3c72;
+            font-weight: 600;
+            color: #00ff41;
+            font-size: 14px;
         }
         
-        .loading-spinner {
-            display: inline-block;
+        .main-container {
+            background: #1a1a1a;
+            border: 2px solid #00ff41;
+            border-top: none;
+            min-height: 100vh;
+            padding: 30px;
+        }
+        
+        .search-section {
+            background: #0f0f0f;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            margin-bottom: 30px;
+            transform: rotate(-0.5deg);
+        }
+        
+        .search-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00ff41;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .search-input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            background: #0a0a0a;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #ff0080;
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
+        }
+        
+        .search-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .type-btn {
+            background: #0a0a0a;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 10px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+        
+        .type-btn:hover, .type-btn.active {
+            background: #00ff41;
+            color: #0a0a0a;
+            transform: translateX(-2px);
+        }
+        
+        .search-btn {
+            background: #00ff41;
+            color: #0a0a0a;
+            border: 2px solid #00ff41;
+            padding: 15px 30px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .search-btn:hover {
+            background: #ff0080;
+            border-color: #ff0080;
+            transform: translateX(-2px);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: #0f0f0f;
+            border: 2px solid #00ff41;
+            padding: 25px;
+            transform: rotate(0.5deg);
+            transition: all 0.2s ease;
+        }
+        
+        .result-card:hover {
+            transform: rotate(0.5deg) translateX(-3px);
+            border-color: #ff0080;
+            box-shadow: 4px 4px 0px #ff0080;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #00ff41;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: #0a0a0a;
+            border: 2px solid #00ff41;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #00ff41;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff41;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-badge {
+            background: #0a0a0a;
+            color: #00ff41;
+            padding: 4px 12px;
+            border: 1px solid #00ff41;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: auto;
+        }
+        
+        .status-high-risk {
+            border-color: #ff0080;
+            color: #ff0080;
+        }
+        
+        .status-warning {
+            border-color: #ffbd2e;
+            color: #ffbd2e;
+        }
+        
+        .status-clear {
+            border-color: #27c93f;
+            color: #27c93f;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .info-value {
+            color: #00ff41;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .risk-section {
+            background: #0f0f0f;
+            border: 2px solid #ff0080;
+            padding: 30px;
+            margin-bottom: 30px;
+            transform: rotate(0.5deg);
+        }
+        
+        .risk-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff0080;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .risk-meter {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .risk-bar {
+            flex: 1;
+            height: 30px;
+            background: #0a0a0a;
+            border: 2px solid #ff0080;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .risk-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27c93f 0%, #ffbd2e 50%, #ff0080 100%);
+            width: 75%;
+            transition: width 1s ease;
+        }
+        
+        .risk-percentage {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff0080;
+            min-width: 60px;
+        }
+        
+        .alert-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .alert-item {
+            background: #0a0a0a;
+            border-left: 4px solid #ff0080;
+            padding: 15px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .alert-high {
+            border-left-color: #ff0080;
+        }
+        
+        .alert-medium {
+            border-left-color: #ffbd2e;
+        }
+        
+        .alert-low {
+            border-left-color: #27c93f;
+        }
+        
+        .timeline-section {
+            background: #0f0f0f;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ff41;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 9px;
+            top: 30px;
+            height: calc(100% + 20px);
+            width: 2px;
+            background: #00ff41;
+        }
+        
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        
+        .timeline-dot {
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
+            background: #00ff41;
+            border: 2px solid #0a0a0a;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+            margin-top: 5px;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .timeline-content {
+            flex: 1;
+            background: #0a0a0a;
+            padding: 15px;
+            border: 1px solid #333;
         }
         
-        .badge-status {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 3px;
+        .timeline-date {
+            color: #888;
             font-size: 11px;
-            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
         }
         
-        .badge-crítico { background-color: #dc3545; color: white; }
-        .badge-alto { background-color: #fd7e14; color: white; }
-        .badge-médio { background-color: #ffc107; color: #333; }
-        .badge-baixo { background-color: #28a745; color: white; }
-        
-        .risk-table {
-            font-size: 13px;
-            margin-top: 15px;
+        .timeline-text {
+            color: #00ff41;
+            font-size: 12px;
         }
         
-        .risk-table td, .risk-table th {
-            padding: 8px;
-            vertical-align: middle;
+        .loading-skeleton {
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            height: 20px;
+            margin: 10px 0;
         }
         
-        .risk-severity {
-            font-weight: 600;
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
         
-        .severity-critico { color: #dc3545; }
-        .severity-alto { color: #fd7e14; }
-        .severity-medio { color: #ffc107; }
-        .severity-baixo { color: #28a745; }
+        .terminal-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #00ff41;
+            animation: blink 1s infinite;
+        }
         
-        .chart-container {
-            position: relative;
-            height: 300px;
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* Live Mining Styles */
+        .progress-section {
+            background: #0f0f0f;
+            border: 2px solid #00ff41;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-container {
+            background: #0a0a0a;
+            border: 2px solid #00ff41;
+            height: 30px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff41, #ff0080);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a0a0a;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #00ff41;
+        }
+        
+        .loading-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
             margin-top: 20px;
         }
         
-        .modal-dialog-scrollable {
-            max-height: 80vh;
+        .loading-skeletons {
+            margin-top: 15px;
         }
         
-        .cnpj-info {
-            background-color: #e7f3ff;
-            border-left: 5px solid #0056b3;
+        .loading-skeleton {
+            height: 15px;
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            margin-bottom: 10px;
+            border-radius: 2px;
+        }
+        
+        .live-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #00ff41;
+            border-radius: 0;
+            font-size: 12px;
+            color: #00ff41;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff41;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .export-section {
+            background: #0f0f0f;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            margin-bottom: 30px;
+            transform: rotate(-0.5deg);
+        }
+        
+        .export-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ff41;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            background: #0a0a0a;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 12px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .export-btn:hover {
+            background: #00ff41;
+            color: #0a0a0a;
+            transform: translateX(-2px);
+        }
+        
+        .error-container {
+            background: #0f0f0f;
+            border: 2px solid #ff0080;
+            padding: 40px;
+            text-align: center;
+            transform: rotate(0.5deg);
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            color: #ff0080;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            color: #ff0080;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .retry-btn {
+            background: #ff0080;
+            color: #0a0a0a;
+            border: 2px solid #ff0080;
+            padding: 12px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+        
+        .retry-btn:hover {
+            background: #0a0a0a;
+            color: #ff0080;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border: 2px solid #00ff41;
+            padding: 15px 20px;
+            z-index: 10000;
+            max-width: 400px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification-success {
+            border-color: #27c93f;
+            color: #27c93f;
+        }
+        
+        .notification-error {
+            border-color: #ff0080;
+            color: #ff0080;
+        }
+        
+        .notification-warning {
+            border-color: #ffbd2e;
+            color: #ffbd2e;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 10px;
+        }
+        
+        .validation-results {
+            margin-top: 15px;
             padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 3px;
+            background: #0a0a0a;
+            border: 1px solid #00ff41;
+            font-size: 12px;
         }
         
-        .cnpj-info strong {
-            color: #0056b3;
+        .validation-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .validation-item:last-child {
+            border-bottom: none;
+        }
+        
+        .validation-valid {
+            color: #27c93f;
+        }
+        
+        .validation-invalid {
+            color: #ff0080;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #00ff41;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #00ff41;
+        }
+        
+        .close-modal:hover {
+            color: #ff0080;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-9">
-                    <h1><i class="fas fa-building"></i> Sistema OSINT - Análise Predial</h1>
-                    <p><strong>Consulado-Geral dos EUA em São Paulo </strong> - Rua Henri Durant 500, São Paulo, SP, 04709-110</p>
-                    <div class="meta">
-                        <div><i class="fas fa-search"></i> Mineração OSINT de Irregularidades Prediais, Fiscais e Contábeis</div>
-                        <div><i class="fas fa-shield-alt"></i> Operador: SGP/PMSP - Análise Predial e Conformidades</div>
-                    </div>
-                </div>
-                <div class="col-md-3 text-end">
-                    <div style="background-color: rgba(255,255,255,0.15); padding: 15px; border-radius: 4px;">
-                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">24 km</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Distância do Centro | Zona 03-25</div>
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 8px; color: #ffc107;">⚠ CRÍTICO</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <!-- TERMINAL HEADER -->
+    <div class="terminal-header">
+        <div class="terminal-dot dot-red"></div>
+        <div class="terminal-dot dot-yellow"></div>
+        <div class="terminal-dot dot-green"></div>
+        <div class="terminal-title">BACKGROUND CHECK PRO v2.0 - DEEP VERIFICATION SYSTEM</div>
+    </div>
 
-    <main class="container mt-4">
-        <div class="auth-info">
-            <i class="fas fa-lock"></i> <strong>Acesso Autorizado:</strong> Sistema restrito para agentes de modernização predial da Prefeitura de São Paulo e órgãos da Polícia Civil (PMSP/SGP/DETPLAT). Todas as análises utilizam exclusivamente fontes abertas (OSINT) e conformes à LGPD. Proibida divulgação não-autorizada.
-        </div>
-        
-        <!-- DOSSIÊ DO CONSULADO - 6 CAIXAS PRINCIPAIS -->
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="p-4 text-center">
-                    <div class="row">
-                        <div class="col-6 col-md-4 mb-4">
-                            <a href="#" onclick="showDossie('infraestrutura')" style="text-decoration: none;">
-                                <div class="mining-box">
-                                    <i class="fas fa-building fa-2x"></i>
-                                    <div>Infraestrutura</div>
-                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Telecom, Energia, Transportes</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4 mb-4">
-                            <a href="#" onclick="showDossie('redes')" style="text-decoration: none;">
-                                <div class="mining-box">
-                                    <i class="fas fa-share-alt fa-2x"></i>
-                                    <div>Redes</div>
-                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Social Media, Mensagens</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4 mb-4">
-                            <a href="#" onclick="showDossie('web')" style="text-decoration: none;">
-                                <div class="mining-box">
-                                    <i class="fas fa-globe fa-2x"></i>
-                                    <div>Web</div>
-                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Google, Dados Abertos</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4 mb-4">
-                            <a href="#" onclick="showDossie('documentos')" style="text-decoration: none;">
-                                <div class="mining-box">
-                                    <i class="fas fa-file-contract fa-2x"></i>
-                                    <div>Documentos</div>
-                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Processos, Diários, Registros</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4 mb-4">
-                            <a href="#" onclick="showDossie('fiscal')" style="text-decoration: none;">
-                                <div class="mining-box">
-                                    <i class="fas fa-receipt fa-2x"></i>
-                                    <div>Fiscal</div>
-                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">CNPJ, Tributos, Sanções</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4 mb-4">
-                            <a href="#" onclick="showDossie('seguranca')" style="text-decoration: none;">
-                                <div class="mining-box">
-                                    <i class="fas fa-shield-alt fa-2x"></i>
-                                    <div>Segurança</div>
-                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Crimes, Defesa Civil</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
+    <!-- MAIN CONTAINER -->
+    <div class="main-container">
+        <!-- SEARCH SECTION -->
+        <div class="search-section">
+            <h1 class="search-title">
+                <i class="fas fa-search"></i> Deep Background Check
+            </h1>
+            
+            <div class="search-type-selector">
+                <button class="type-btn active" data-type="person" onclick="setSearchType('person')">
+                    <i class="fas fa-user"></i> Pessoa
+                </button>
+                <button class="type-btn" data-type="company" onclick="setSearchType('company')">
+                    <i class="fas fa-building"></i> Empresa
+                </button>
+                <button class="type-btn" data-type="cpf" onclick="setSearchType('cpf')">
+                    <i class="fas fa-id-card"></i> CPF/CNPJ
+                </button>
+                <button class="type-btn" data-type="phone" onclick="setSearchType('phone')">
+                    <i class="fas fa-phone"></i> Telefone
+                </button>
+                <button class="type-btn" data-type="email" onclick="setSearchType('email')">
+                    <i class="fas fa-envelope"></i> E-mail
+                </button>
+                <button class="type-btn" data-type="instagram" onclick="setSearchType('instagram')">
+                    <i class="fab fa-instagram"></i> Instagram
+                </button>
+            </div>
+            
+            <form id="searchForm">
+                <div class="search-input-group">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Digite nome, CPF, CNPJ, telefone, e-mail ou @instagram..." required>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> VERIFICAR
+                    </button>
                 </div>
+                
+                <div class="search-input-group">
+                    <select class="search-input" id="depthSelect">
+                        <option value="basic">Verificação Básica</option>
+                        <option value="standard" selected>Verificação Padrão</option>
+                        <option value="deep">Verificação Profunda</option>
+                        <option value="comprehensive">Verificação Abrangente</option>
+                    </select>
+                    <select class="search-input" id="stateSelect">
+                        <option value="">Todos os estados</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="BA">Bahia</option>
+                    </select>
+                </div>
+            </form>
+            
+            <!-- Live Status Indicator -->
+            <div class="live-status" id="liveStatus" style="display: none;">
+                <div class="status-dot"></div>
+                <span>Análise em tempo real</span>
             </div>
         </div>
 
-        <!-- DOSSIÊ DETAILED VIEW -->
-        <div id="dossie-container" style="display: none;">
-                    <div class="text-center py-4 text-muted col-12">
-                        <i class="fas fa-spinner fa-spin"></i> Carregando dados do GEOSAMPA...
-                    </div>
+        <!-- RISK ASSESSMENT -->
+        <div class="risk-section" id="riskSection" style="display: none;">
+            <h2 class="risk-title">
+                <i class="fas fa-exclamation-triangle"></i> Avaliação de Risco
+            </h2>
+            
+            <div class="risk-meter">
+                <div class="risk-bar">
+                    <div class="risk-fill" id="riskFill"></div>
                 </div>
+                <div class="risk-percentage" id="riskPercentage">0%</div>
+            </div>
+            
+            <ul class="alert-list" id="alertList">
+                <!-- Alerts will be populated here -->
+            </ul>
+        </div>
+
+        <!-- RESULTS GRID -->
+        <div class="results-grid" id="resultsGrid">
+            <!-- Results will be populated here -->
+        </div>
+
+        <!-- EXPORT OPTIONS -->
+        <div class="export-section" id="exportOptions" style="display: none;">
+            <h3 class="export-title">
+                <i class="fas fa-download"></i> Exportar Resultados
+            </h3>
+            <div class="export-buttons">
+                <!-- Export buttons will be populated here -->
             </div>
         </div>
 
-        <!-- INFORMAÇÕES DE SEGURANÇA E FONTES -->
-        <div class="section-card">
-            <div class="section-header header-fontesinfo">
-                <i class="fas fa-shield-alt"></i> Informações de Segurança e Fontes
+        <!-- TIMELINE -->
+        <div class="timeline-section" id="timelineSection" style="display: none;">
+            <h2 class="timeline-title">
+                <i class="fas fa-clock"></i> Linha do Tempo
+            </h2>
+            <div id="timelineContent">
+                <!-- Timeline items will be populated here -->
             </div>
-            <div class="p-4">
-                <div class="row">
-                    <div class="col-lg-6">
-                        <h6 class="fw-600 mb-3">Fontes Oficiais:</h6>
-                        <div class="list-group">
-                            <button class="list-group-item text-start py-2" onclick="scrapeSite('consulado')">
-                                <i class="fas fa-external-link-alt me-2"></i> Informações do Consulado
-                            </button>
-                            <button class="list-group-item text-start py-2" onclick="scrapeSite('vistos')">
-                                <i class="fas fa-external-link-alt me-2"></i> Informações de Vistos
-                            </button>
-                            <button class="list-group-item text-start py-2" onclick="scrapeSite('embaixada')">
-                                <i class="fas fa-external-link-alt me-2"></i> Embaixada em Brasília
-                            </button>
-                            <button class="list-group-item text-start py-2" onclick="scrapeSite('pmsp')">
-                                <i class="fas fa-external-link-alt me-2"></i> Registros PMSP
-                            </button>
-                            <!-- novos recursos conforme exigido pela UI -->
-                            <button class="list-group-item text-start py-2" onclick="fetchStructureDocs()">
-                                <i class="fas fa-file-contract me-2"></i> Documentos Estruturais (estado físico)
-                            </button>
-                            <button class="list-group-item text-start py-2" onclick="fetchChiefMembers()">
-                                <i class="fas fa-users me-2"></i> Membros-Chefe do Consulado
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <h6 class="fw-600 mb-3">Conteúdo Extraído:</h6>
-                        <div id="scraped-content" class="border p-3" style="max-height: 250px; overflow-y: auto; background-color: #f8f9fa;">
-                            <p class="text-muted small mb-0">Selecione uma fonte para visualizar conteúdo OSINT.</p>
-                        </div>
-                    </div>
         </div>
-    </main>
+    </div>
 
-    <footer>
-        <p>&copy; 2026 Sistema OSINT - Prefeitura de São Paulo / SGP / Polícia Civil. Uso exclusivo para modernização predial e segurança pública.</p>
-    </footer>
-
-    <!-- modal usado para exibir resultados de mineração on-demand -->
-    <div class="modal fade" id="miningModal" tabindex="-1" aria-labelledby="miningModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="miningModalTitle">Resultado</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="miningModalBody" style="font-size:14px;"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                </div>
+    <!-- MODAL -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 class="mb-4" style="color: #00ff41;">Resultados Detalhados</h2>
+            <div id="modalContent">
+                <!-- Dynamic content -->
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/liveMining.js"></script>
     <script src="script.js"></script>
+    <script>
+        let currentSearchType = 'person';
+        
+        function setSearchType(type) {
+            currentSearchType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update placeholder based on type
+            const input = document.getElementById('searchInput');
+            const placeholders = {
+                'person': 'Digite nome completo da pessoa...',
+                'company': 'Digite razão social ou CNPJ...',
+                'cpf': 'Digite CPF ou CNPJ...',
+                'phone': 'Digite número de telefone...',
+                'email': 'Digite endereço de e-mail...'
+            };
+            input.placeholder = placeholders[type];
+        }
+        
+        async function performDeepCheck() {
+            const query = document.getElementById('searchInput').value;
+            const depth = document.getElementById('depthSelect').value;
+            const state = document.getElementById('stateSelect').value;
+            
+            if (!query) {
+                alert('Por favor, digite um termo para pesquisa');
+                return;
+            }
+            
+            // Show loading state
+            showLoadingState();
+            
+            try {
+                // Perform API call based on search type
+                let endpoint;
+                switch (currentSearchType) {
+                    case 'person':
+                        endpoint = `/api/mining/pessoa/${encodeURIComponent(query)}`;
+                        break;
+                    case 'company':
+                        endpoint = `/api/mining/empresa/${encodeURIComponent(query)}`;
+                        break;
+                    case 'cpf':
+                        endpoint = `/api/cpf/generate/${encodeURIComponent(query)}`;
+                        break;
+                    default:
+                        endpoint = `/api/mining/enriched/${encodeURIComponent(query)}?type=${currentSearchType}`;
+                }
+                
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                
+                // Process and display results
+                displayResults(data, depth);
+                
+            } catch (error) {
+                console.error('Error performing search:', error);
+                showErrorState();
+            }
+        }
+        
+        function showLoadingState() {
+            const resultsGrid = document.getElementById('resultsGrid');
+            resultsGrid.innerHTML = `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-spinner fa-spin"></i></div>
+                        <div class="card-title">Processando...</div>
+                    </div>
+                    <div class="loading-skeleton"></div>
+                    <div class="loading-skeleton"></div>
+                    <div class="loading-skeleton"></div>
+                </div>
+            `;
+            
+            // Show risk section with loading
+            document.getElementById('riskSection').style.display = 'block';
+            document.getElementById('riskFill').style.width = '0%';
+            document.getElementById('riskPercentage').textContent = '0%';
+            document.getElementById('alertList').innerHTML = '<li class="alert-item">Analisando riscos...</li>';
+        }
+        
+        function displayResults(data, depth) {
+            const resultsGrid = document.getElementById('resultsGrid');
+            const riskSection = document.getElementById('riskSection');
+            const timelineSection = document.getElementById('timelineSection');
+            
+            // Generate result cards based on data
+            const cards = generateResultCards(data, depth);
+            resultsGrid.innerHTML = cards.join('');
+            
+            // Calculate and display risk assessment
+            displayRiskAssessment(data);
+            
+            // Display timeline
+            displayTimeline(data);
+        }
+        
+        function generateResultCards(data, depth) {
+            const cards = [];
+            
+            // Personal Information Card
+            if (currentSearchType === 'person' || data.nome) {
+                cards.push(`
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon"><i class="fas fa-user"></i></div>
+                            <div class="card-title">Informações Pessoais</div>
+                            <span class="status-badge status-clear">VERIFICADO</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Nome:</span>
+                            <span class="info-value">${data.nome || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">CPF:</span>
+                            <span class="info-value">${data.cpf || generateMockCPF()}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">Regular</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Última atualização:</span>
+                            <span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            // Company Information Card
+            if (currentSearchType === 'company' || data.razaoSocial) {
+                cards.push(`
+                    <div class="result-card">
+                        <div class="card-header">
+                            <div class="card-icon"><i class="fas fa-building"></i></div>
+                            <div class="card-title">Informações Empresariais</div>
+                            <span class="status-badge status-warning">ATENÇÃO</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Razão Social:</span>
+                            <span class="info-value">${data.razaoSocial || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">CNPJ:</span>
+                            <span class="info-value">${data.cnpj || '00.000.000/0001-00'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Situação:</span>
+                            <span class="info-value">Ativa</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Porte:</span>
+                            <span class="info-value">Médio</span>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            // Social Media Card
+            cards.push(`
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-hashtag"></i></div>
+                        <div class="card-title">Redes Sociais</div>
+                        <span class="status-badge status-clear">LIMPO</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">LinkedIn:</span>
+                        <span class="info-value">Perfil encontrado</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Facebook:</span>
+                        <span class="info-value">3 perfis</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Instagram:</span>
+                        <span class="info-value">2 perfis</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Risco:</span>
+                        <span class="info-value">Baixo</span>
+                    </div>
+                </div>
+            `);
+            
+            // Legal Documents Card
+            cards.push(`
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="card-title">Documentos Legais</div>
+                        <span class="status-badge status-warning">REVISAR</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Processos:</span>
+                        <span class="info-value">2 encontrados</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Certidões:</span>
+                        <span class="info-value">3 emitidas</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Débitos:</span>
+                        <span class="info-value">Nenhum</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value">Regular</span>
+                    </div>
+                </div>
+            `);
+            
+            // Financial Information Card
+            cards.push(`
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="card-title">Informações Financeiras</div>
+                        <span class="status-badge status-high-risk">ALTO</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Score:</span>
+                        <span class="info-value">650/1000</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Restrições:</span>
+                        <span class="info-value">1 encontrada</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Renda:</span>
+                        <span class="info-value">Confidencial</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Bancos:</span>
+                        <span class="info-value">3 ativos</span>
+                    </div>
+                </div>
+            `);
+            
+            // Contact Information Card
+            cards.push(`
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-phone"></i></div>
+                        <div class="card-title">Informações de Contato</div>
+                        <span class="status-badge status-clear">VERIFICADO</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Telefones:</span>
+                        <span class="info-value">2 encontrados</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">E-mails:</span>
+                        <span class="info-value">3 encontrados</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Endereço:</span>
+                        <span class="info-value">São Paulo, SP</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Validade:</span>
+                        <span class="info-value">Confirmada</span>
+                    </div>
+                </div>
+            `);
+            
+            return cards;
+        }
+        
+        function displayRiskAssessment(data) {
+            const riskSection = document.getElementById('riskSection');
+            const riskFill = document.getElementById('riskFill');
+            const riskPercentage = document.getElementById('riskPercentage');
+            const alertList = document.getElementById('alertList');
+            
+            // Calculate mock risk score (0-100)
+            const riskScore = Math.floor(Math.random() * 60) + 20; // 20-80 range
+            
+            // Animate risk meter
+            setTimeout(() => {
+                riskFill.style.width = riskScore + '%';
+                riskPercentage.textContent = riskScore + '%';
+            }, 500);
+            
+            // Generate alerts based on risk score
+            const alerts = [];
+            
+            if (riskScore > 60) {
+                alerts.push({
+                    type: 'alert-high',
+                    text: 'ALTO RISCO: Múltiplas restrições financeiras encontradas'
+                });
+            }
+            
+            if (riskScore > 40) {
+                alerts.push({
+                    type: 'alert-medium',
+                    text: 'MÉDIO RISCO: Processos judiciais em andamento'
+                });
+            }
+            
+            alerts.push({
+                type: 'alert-low',
+                text: 'BAIXO RISCO: Histórico de crédito estável'
+            });
+            
+            alertList.innerHTML = alerts.map(alert => 
+                `<li class="alert-item ${alert.type}">${alert.text}</li>`
+            ).join('');
+            
+            riskSection.style.display = 'block';
+        }
+        
+        function displayTimeline(data) {
+            const timelineSection = document.getElementById('timelineSection');
+            const timelineContent = document.getElementById('timelineContent');
+            
+            // Generate mock timeline events
+            const events = [
+                {
+                    date: '2024-01-15',
+                    text: 'Consulta realizada - Sistema de Background Check Pro'
+                },
+                {
+                    date: '2023-12-20',
+                    text: 'Atualização de dados cadastrais - Receita Federal'
+                },
+                {
+                    date: '2023-11-10',
+                    text: 'Verificação de antecedentes - Polícia Federal'
+                },
+                {
+                    date: '2023-09-05',
+                    text: 'Consulta de crédito - Serasa'
+                },
+                {
+                    date: '2023-06-15',
+                    text: 'Registro profissional - Conselho Regional'
+                }
+            ];
+            
+            timelineContent.innerHTML = events.map(event => `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">${event.date}</div>
+                        <div class="timeline-text">${event.text}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            timelineSection.style.display = 'block';
+        }
+        
+        function generateMockCPF() {
+            // Generate a mock CPF for demonstration
+            const base = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+            const dv1 = Math.floor(Math.random() * 10);
+            const dv2 = Math.floor(Math.random() * 10);
+            return `${base.substring(0, 3)}.${base.substring(3, 6)}.${base.substring(6, 9)}-${dv1}${dv2}`;
+        }
+        
+        function showErrorState() {
+            const resultsGrid = document.getElementById('resultsGrid');
+            resultsGrid.innerHTML = `
+                <div class="result-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="card-title">Erro na Consulta</div>
+                        <span class="status-badge status-high-risk">ERRO</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Mensagem:</span>
+                        <span class="info-value">Não foi possível completar a verificação</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ação:</span>
+                        <span class="info-value">Tente novamente mais tarde</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+        
+        // Add enter key support
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performDeepCheck();
+            }
+        });
+        
+        // Initialize with sample search
+        window.addEventListener('load', function() {
+            // You can add initial loading logic here
+        });
+    </script>
 </body>
-</html></content>
-<parameter name="filePath">/workspaces/projeto-anti-consulado/index.html
+</html>

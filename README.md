@@ -55,10 +55,32 @@ Exclusivo para delegados e agentes autorizados. Todas as operações são basead
 ## GitHub Pages Deployment
 
 O sistema está configurado para deploy automático no GitHub Pages via Actions. Acesse:
-- **Live Demo**: https://jubilant-barnacle-v6jq4xvxgjq62qxx-3000.app.github.dev
 - **GitHub Pages**: https://quakeweb-repo.github.io/projeto-anti-consulado/
+- **Live Demo**: https://jubilant-barnacle-v6jq4xvxgjq62qxx-3000.app.github.dev
 
-O workflow `.github/workflows/deploy.yml` automatiza o deploy da branch `main` para `gh-pages`.
+### Configuração do Deploy
+- **Workflow**: `.github/workflows/deploy.yml` automatiza o deploy da branch `main` para GitHub Pages
+- **Build Process**: Cria estrutura otimizada para GitHub Pages com arquivos estáticos
+- **Compatibilidade**: Versão compatível com GitHub Pages (sem backend, com dados simulados)
+- **404 Handling**: Página 404 customizada para SPA routing
+
+### Funcionalidades no GitHub Pages
+- ✅ Interface completa com terminal-style neobrutalista
+- ✅ Simulação de mineração em tempo real
+- ✅ Validação de CPF e Instagram usernames
+- ✅ Progress bars e animações
+- ✅ Export de resultados (JSON)
+- ✅ Cards detalhados com mock data
+- ✅ Sistema de avaliação de risco
+- ✅ Timeline de eventos
+
+### Limitações (GitHub Pages)
+- 🚫 Sem backend real (usa dados simulados)
+- 🚫 Sem WebSocket (usa polling)
+- 🚫 Sem API calls externas (usa mock data)
+- 🚫 Sem processamento real de dados
+
+Para funcionalidade completa, execute localmente com `npm start`.
 
 ## Publicação
 
