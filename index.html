@@ -191,6 +191,9 @@
             padding-bottom: 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
+        .admin-section:last-child {
+            margin-bottom: 0; padding-bottom: 0; border-bottom: none;
+        }
         .admin-title {
             color: #00d4ff; font-size: 1.2rem; margin-bottom: 15px;
             display: flex; align-items: center; gap: 10px;
@@ -619,7 +622,17 @@
         
         function generateCNPJ() {
             const base = Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0');
-            return `${base.substr(0,2)}.${base.substr(2,3)}.${base.substr(5,3)}/${base.substr(8,4)}-${base.substr(12,2)}`;
+            const calc = (num) => {
+                let sum = 0;
+                for (let i = 0; i < num.length - 1; i++) {
+                    sum += parseInt(num[i]) * (num.length - i);
+                }
+                const mod = sum % 11;
+                return mod < 2 ? 0 : 11 - mod;
+            };
+            const d1 = calc(base + '0');
+            const d2 = calc(base + d1);
+            return `${base.substr(0,2)}.${base.substr(2,3)}.${base.substr(5,3)}/${base.substr(8,4)}-${d1}${d2}`;
         }
         
         function displayResults(query, cnpj) {
