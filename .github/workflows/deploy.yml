@@ -58,31 +58,52 @@ jobs:
           mkdir -p public/js
           mkdir -p public/src/services
           
-          # Copy HTML file
+          # Copy the NEW Background Check Pro HTML file (overwrite old one)
           cp index.html public/
           
           # Copy JavaScript files
           cp script.js public/
           cp public/js/liveMining.js public/js/ 2>/dev/null || true
           
-          # Copy services
+          # Copy all services for frontend functionality
           cp -r src/services/* public/src/services/
+          
+          # Ensure the new UI is deployed by copying the correct files
+          echo "Deploying Background Check Pro interface..."
           
           # Create 404 page for SPA routing
           echo '<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Redirecting...</title>
+    <title>Background Check Pro - Redirecting...</title>
     <meta http-equiv="refresh" content="0; url=/">
     <script>
       window.location.href = "/";
     </script>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff41;
+            font-family: "JetBrains Mono", monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <p>Redirecting to main page...</p>
+    <div>Redirecting to Background Check Pro...</div>
 </body>
 </html>' > public/404.html
+          
+          # Verify deployment files
+          echo "Files to deploy:"
+          ls -la public/
+          echo "Services copied:"
+          ls -la public/src/services/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
