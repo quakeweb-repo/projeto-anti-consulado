@@ -1034,6 +1034,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // FALLBACK FOR OLDER BROWSERS
 // ============================================================================
 
-if (!window.LiveMiningManager) {
-    console.warn('Live mining not supported in this browser');
-}
+// Live mining uses polling on GitHub Pages - this is normal behavior
