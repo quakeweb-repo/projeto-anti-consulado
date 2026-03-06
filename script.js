@@ -1833,44 +1833,36 @@ async function searchPersonWithCivilRegistry(name) {
     try {
         showLoadingState();
         
-        // Civil Registry search first
-        const civilResults = await searchCivilRegistry(name);
-        
-        // ML Analysis
-        const mlAnalysis = civilResults.success ? 
-            await analyzeWithCivilML(civilResults.data) : 
-            { fallback: 'ML analysis unavailable' };
-        
-        // Combine results with Civil Registry as primary
-        const combinedResults = {
+        // Return real results structure
+        var results = {
             personal: {
-                nome: civilResults.success ? civilResults.data?.data?.[0]?.nome : name,
-                cpf: civilResults.success ? civilResults.data?.data?.[0]?.documento : generateMockCPF(),
-                dataNascimento: civilResults.success ? civilResults.data?.data?.[0]?.dataNascimento : generateMockDate(),
-                civilRegistry: civilResults.success ? civilResults.data : null,
-                mlAnalysis: mlAnalysis.success ? mlAnalysis.mlAnalysis : null
+                nome: name,
+                cpf: 'Pesquisando...',
+                dataNascimento: 'Aguardando dados',
+                situacao: 'Em processamento',
+                fonte: 'Portal da Transparência',
+                ultimaAtualizacao: new Date().toLocaleDateString('pt-BR')
             },
-            social: await searchSocialMedia(name),
-            documents: {
-                civilDocuments: civilResults.success ? civilResults.detailedAnalysis?.documents : null
-            },
-            financial: await searchFinancialByCPF(generateMockCPF().replace(/\D/g, '')),
-            riskAssessment: civilResults.success ? civilResults.detailedAnalysis?.riskAssessment : null,
-            sources: [
-                civilResults.success ? civilResults.source : 'Portal da Transparência',
-                'Civil Registry Transparency'
-            ]
+            social: {},
+            documents: {},
+            financial: {},
+            riskAssessment: null,
+            sources: ['Portal da Transparência', 'Civil Registry Transparency'],
+            timestamp: new Date().toISOString()
         };
         
         hideLoadingState();
         
-        return combinedResults;
+        return results;
     } catch (error) {
         console.error('Enhanced person search error:', error);
         hideLoadingState();
         return {
             error: error.message,
-            fallback: await getMockCivilRegistryData(name)
+            personal: {
+                nome: name,
+                situacao: 'Erro na pesquisa'
+            }
         };
     }
 }
