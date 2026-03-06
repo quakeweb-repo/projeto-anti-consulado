@@ -328,6 +328,167 @@ app.get('/api/instagram/validate/:input', (req, res) => {
 });
 
 // ============================================================================
+// LIVE MINING ENDPOINTS - Real-time Processing
+// ============================================================================
+
+// Mining status endpoint for live updates
+app.get('/api/mining/status/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    
+    // In a real implementation, this would check actual request status
+    // For now, simulate progress
+    const mockStatus = {
+        requestId,
+        status: 'running',
+        step: Math.floor(Math.random() * 10),
+        totalSteps: 10,
+        progress: Math.floor(Math.random() * 100),
+        partialResults: {
+            instagram: {
+                id: 'instagram',
+                type: 'instagram',
+                title: 'Instagram Analysis',
+                status: 'processing',
+                data: {
+                    followers: Math.floor(Math.random() * 10000),
+                    following: Math.floor(Math.random() * 1000),
+                    posts: Math.floor(Math.random() * 500)
+                }
+            }
+        },
+        timestamp: new Date().toISOString()
+    };
+    
+    res.json(mockStatus);
+});
+
+// Export endpoints
+app.get('/api/export/json/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    
+    // Generate mock JSON export
+    const exportData = {
+        requestId,
+        exportType: 'json',
+        timestamp: new Date().toISOString(),
+        data: {
+            query: 'Sample Query',
+            results: 'Mock Results',
+            analysis: 'Mock Analysis'
+        }
+    };
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="background-check-${requestId}.json"`);
+    res.send(JSON.stringify(exportData, null, 2));
+});
+
+app.get('/api/export/pdf/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    
+    // For PDF export, would use a library like puppeteer
+    // For now, return a simple text file
+    const pdfContent = `
+BACKGROUND CHECK REPORT - ${requestId}
+Generated: ${new Date().toISOString()}
+==========================================
+Query: Sample Query
+Results: Mock Results
+Analysis: Mock Analysis
+==========================================
+This is a mock PDF export.
+In production, this would be a properly formatted PDF.
+    `;
+    
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', `attachment; filename="background-check-${requestId}.txt"`);
+    res.send(pdfContent);
+});
+
+app.get('/api/share/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    
+    // Generate shareable link
+    const shareUrl = `${req.protocol}://${req.get('host')}/shared/${requestId}`;
+    
+    res.json({
+        requestId,
+        shareUrl,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Shared results endpoint
+app.get('/shared/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    
+    // Serve shared results page
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ============================================================================
+// WEBSOCKET SUPPORT FOR REAL-TIME UPDATES
+// ============================================================================
+
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ noServer: true });
+
+app.on('upgrade', (request, socket, head) => {
+    if (request.url === '/ws/mining') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request);
+        });
+    }
+});
+
+wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    // Send initial status
+    ws.send(JSON.stringify({
+        type: 'connected',
+        message: 'Connected to live mining updates'
+    }));
+    
+    // Handle incoming messages
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+            handleWebSocketMessage(ws, data);
+        } catch (error) {
+            console.error('Invalid WebSocket message:', error);
+        }
+    });
+    
+    // Handle disconnection
+    ws.on('close', () => {
+        console.log('WebSocket client disconnected');
+    });
+});
+
+function handleWebSocketMessage(ws, data) {
+    switch (data.type) {
+        case 'subscribe':
+            // Subscribe to specific request updates
+            ws.requestId = data.requestId;
+            break;
+        case 'ping':
+            ws.send(JSON.stringify({ type: 'pong' }));
+            break;
+    }
+}
+
+// Broadcast updates to all connected clients
+function broadcastUpdate(data) {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
+
+// ============================================================================
 // INICIALIZAÇÃO DO SERVIDOR
 // ============================================================================
 
@@ -341,6 +502,7 @@ app.listen(PORT, () => {
 ║  Foco: Verificação profunda de pessoas e empresas              ║
 ║  Recursos: Instagram, CPF, CNPJ, OSINT avançado               ║
 ║  Interface: Terminal-style neobrutalista                       ║
+║  Live Mining: AJAX + WebSocket em tempo real                   ║
 ╚════════════════════════════════════════════════════════════════╝
     `);
 });
