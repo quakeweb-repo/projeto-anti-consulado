@@ -283,171 +283,72 @@
             <i class="fas fa-lock"></i> <strong>Acesso Autorizado:</strong> Sistema restrito para agentes de modernização predial da Prefeitura de São Paulo e órgãos da Polícia Civil (PMSP/SGP/DETPLAT). Todas as análises utilizam exclusivamente fontes abertas (OSINT) e conformes à LGPD. Proibida divulgação não-autorizada.
         </div>
         
-        <!-- INFORMAÇÕES CNPJ E FISCAL -->
-        <div class="cnpj-info">
-            <h6 class="mb-2"><i class="fas fa-file-invoice"></i> Informações Fiscais e Cadastrais</h6>
-            <div class="row" style="font-size: 13px;">
-                <div class="col-md-3"><strong>CNPJ:</strong> 54.016.822/0001-82 (Serviços Diplomáticos EUA)</div>
-                <div class="col-md-3"><strong>Inscrição Estadual:</strong> Isenta (Protocolo Diplomático)</div>
-                <div class="col-md-3"><strong>Situação Cadastral:</strong> Regular/Ativa</div>
-                <div class="col-md-3"><strong>Regime Tributário:</strong> Imunidade Diplomática</div>
-            </div>
-        </div>
-
-        <!-- BUSCA ON DEMAND -->
-        <div class="section-card">
-            <div class="section-header header-busca">
-                <i class="fas fa-search-plus"></i> Busca On Demand de Irregularidades
-            </div>
-            <div class="section-card" style="border-left: none;">
-                <div class="p-4">
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <label for="address-input" class="form-label fw-600"><i class="fas fa-map-marker-alt"></i> Endereço:</label>
-                            <input 
-                                type="text" 
-                                class="form-control" 
-                                id="address-input" 
-                                value="Rua Henri Durant 500, São Paulo, SP, 04709-110"
-                                readonly>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="sei-input" class="form-label fw-600"><i class="fas fa-search"></i> Busca SEI:</label>
-                            <input 
-                                type="text" 
-                                class="form-control" 
-                                id="sei-input" 
-                                placeholder="conformidade, reforma, estrutural, construção">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="period-input" class="form-label fw-600"><i class="fas fa-calendar"></i> Período:</label>
-                            <select class="form-select" id="period-input">
-                                <option value="all">Últimos 6 anos</option>
-                                <option value="2024">2024</option>
-                                <option value="2023">2023</option>
-                                <option value="2022">2022</option>
-                                <option value="2020-2021">2020-2021</option>
-                                <option value="2015-2019">2015-2019</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="type-input" class="form-label fw-600"><i class="fas fa-filter"></i> Tipo:</label>
-                            <select class="form-select" id="type-input">
-                                <option value="all">Todos os tipos</option>
-                                <option value="predial">Irregularidades Prediais</option>
-                                <option value="fiscal">Questões Fiscais</option>
-                                <option value="ambiental">Conformidade Ambiental</option>
-                                <option value="seguranca">Segurança Estrutural</option>
-                            </select>
-                        </div>
-                    </div>
+        <!-- DOSSIÊ DO CONSULADO - 6 CAIXAS PRINCIPAIS -->
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="p-4 text-center">
                     <div class="row">
-                        <div class="col-12">
-                            <button class="btn btn-primary me-2" onclick="loadAnalysis()">
-                                <i class="fas fa-play"></i> Analisar Imóvel
-                            </button>
-                            <button class="btn btn-secondary me-2" onclick="searchSEI()">
-                                <i class="fas fa-file-alt"></i> Buscar no SEI (Processos)
-                            </button>
-                            <button class="btn btn-info me-2" onclick="checkCNPJ()">
-                                <i class="fas fa-search-dollar"></i> Validar CNPJ/Fiscal
-                            </button>
-                            <button class="btn btn-success" onclick="exportReport()">
-                                <i class="fas fa-download"></i> Exportar Relatório PDF
-                            </button>
+                        <div class="col-6 col-md-4 mb-4">
+                            <a href="#" onclick="showDossie('infraestrutura')" style="text-decoration: none;">
+                                <div class="mining-box">
+                                    <i class="fas fa-building fa-2x"></i>
+                                    <div>Infraestrutura</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Telecom, Energia, Transportes</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4 mb-4">
+                            <a href="#" onclick="showDossie('redes')" style="text-decoration: none;">
+                                <div class="mining-box">
+                                    <i class="fas fa-share-alt fa-2x"></i>
+                                    <div>Redes</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Social Media, Mensagens</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4 mb-4">
+                            <a href="#" onclick="showDossie('web')" style="text-decoration: none;">
+                                <div class="mining-box">
+                                    <i class="fas fa-globe fa-2x"></i>
+                                    <div>Web</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Google, Dados Abertos</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4 mb-4">
+                            <a href="#" onclick="showDossie('documentos')" style="text-decoration: none;">
+                                <div class="mining-box">
+                                    <i class="fas fa-file-contract fa-2x"></i>
+                                    <div>Documentos</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Processos, Diários, Registros</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4 mb-4">
+                            <a href="#" onclick="showDossie('fiscal')" style="text-decoration: none;">
+                                <div class="mining-box">
+                                    <i class="fas fa-receipt fa-2x"></i>
+                                    <div>Fiscal</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">CNPJ, Tributos, Sanções</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4 mb-4">
+                            <a href="#" onclick="showDossie('seguranca')" style="text-decoration: none;">
+                                <div class="mining-box">
+                                    <i class="fas fa-shield-alt fa-2x"></i>
+                                    <div>Segurança</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 8px;">Crimes, Defesa Civil</div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- IRREGULARIDADES E OPORTUNIDADES -->
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="section-card">
-                    <div class="section-header header-irregularidades">
-                        <i class="fas fa-exclamation-circle"></i> Irregularidades Identificadas
-                    </div>
-                    <div class="p-4">
-                        <div id="irregularities-list">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-spinner fa-spin"></i> Carregando análise...
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-6">
-                <div class="section-card">
-                    <div class="section-header header-oportunidades">
-                        <i class="fas fa-tools"></i> Oportunidades de Modernização
-                    </div>
-                    <div class="p-4">
-                        <div id="opportunities-list">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-spinner fa-spin"></i> Carregando análise...
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- FERRAMENTAS DE MINERAÇÃO ON-DEMAND (CAIXAS VISÍVEIS ACIMA) -->
-        <div class="section-card">
-            <div class="section-header header-mining">
-                <i class="fas fa-tools"></i> Ferramentas de Mineração (clique para explorar)
-            </div>
-            <div class="p-4 text-center">
-                <div class="row justify-content-center">
-                    <div class="col-6 col-sm-4 col-md-3 mb-3">
-                        <div class="mining-box" onclick="mineOsint('infraestrutura','Infraestrutura')">
-                            <i class="fas fa-building fa-2x"></i>
-                            <div>Infraestrutura</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-4 col-md-3 mb-3">
-                        <div class="mining-box" onclick="mineOsint('redes','Redes Sociais')">
-                            <i class="fas fa-hashtag fa-2x"></i>
-                            <div>Redes</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-4 col-md-3 mb-3">
-                        <div class="mining-box" onclick="mineOsint('web','Busca Web')">
-                            <i class="fas fa-search fa-2x"></i>
-                            <div>Web</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-4 col-md-3 mb-3">
-                        <div class="mining-box" onclick="mineOsint('documentos','Documentos')">
-                            <i class="fas fa-file-alt fa-2x"></i>
-                            <div>Documentos</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-4 col-md-3 mb-3">
-                        <div class="mining-box" onclick="mineOsint('fiscal','Fiscal/Tributos')">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
-                            <div>Fiscal</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-4 col-md-3 mb-3">
-                        <div class="mining-box" onclick="mineOsint('seguranca','Segurança')">
-                            <i class="fas fa-shield-alt fa-2x"></i>
-                            <div>Segurança</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DADOS GEOGRÁFICOS E RISCOS -->
-        <div class="section-card">
-            <div class="section-header header-geo">
-                <i class="fas fa-map-marked-alt"></i> Dados Geográficos e Riscos
-            </div>
-            <div class="p-4">
-                <div id="geo-data" class="data-grid">
+        <!-- DOSSIÊ DETAILED VIEW -->
+        <div id="dossie-container" style="display: none;">
                     <div class="text-center py-4 text-muted col-12">
                         <i class="fas fa-spinner fa-spin"></i> Carregando dados do GEOSAMPA...
                     </div>
@@ -492,8 +393,6 @@
                             <p class="text-muted small mb-0">Selecione uma fonte para visualizar conteúdo OSINT.</p>
                         </div>
                     </div>
-                </div>
-            </div>
         </div>
     </main>
 
