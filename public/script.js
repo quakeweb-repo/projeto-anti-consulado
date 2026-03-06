@@ -422,3 +422,29 @@ SVMA (Secretaria do Verde):
         `;
     }
 }
+
+// helpers para mineração on-demand
+function showMiningResult(title, text) {
+    if (window.bootstrap && document.getElementById('miningModal')) {
+        document.getElementById('miningModalTitle').textContent = title;
+        document.getElementById('miningModalBody').innerHTML = text.replace(/\n/g, '<br>');
+        const modal = new bootstrap.Modal(document.getElementById('miningModal'));
+        modal.show();
+    } else {
+        alert(title + '\n\n' + text);
+    }
+}
+
+// generic OSINT Brazuca mining helper
+function mineOsint(category, title) {
+    fetch(`/api/osint/${category}?live=1`)
+        .then(resp => resp.json())
+        .then(result => {
+            const formatted = JSON.stringify(result.data, null, 2);
+            showMiningResult(title, formatted);
+        })
+        .catch(err => {
+            console.error(err);
+            alert(`Erro ao minerar categoria ${category}`);
+        });
+}
