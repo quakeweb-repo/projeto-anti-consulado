@@ -19,9 +19,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ROTAS
 // ============================================================================
 
-// Rota principal - servir index.html
+// Rota principal - servir index.html (GitHub Pages)
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Health check

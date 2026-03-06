@@ -86,10 +86,40 @@ export const getOsintCategory = async (category) => {
                     timestamp: new Date().toISOString()
                 };
                 
+            case 'cnpj':
+                return {
+                    cnpj_data: {
+                        principal: '54.016.822/0001-82',
+                        entidade: 'Consulado-Geral dos EUA em São Paulo',
+                        status: 'Regular',
+                        regime: 'Imunidade Diplomática',
+                        data_abertura: '1967-01-01',
+                        natureza_juridica: 'Representação Diplomática Estrangeira',
+                        endereco: 'Rua Henri Durant 500, São Paulo, SP, 04709-110'
+                    },
+                    consultas_publicas: [
+                        { fonte: 'Receita Federal', url: 'https://www.receita.federal.gov.br', tipo: 'Cadastro CNPJ' },
+                        { fonte: 'JUCESP', url: 'https://www.jucesp.sp.gov.br', tipo: 'Cartório de Registro' },
+                        { fonte: 'Sintegra', url: 'https://www.sintegra.gov.br', tipo: 'Inscrição Estadual' },
+                        { fonte: 'Cadesp', url: 'https://www.cadesp.fazenda.sp.gov.br', tipo: 'Débitos ICMS' }
+                    ],
+                    socios: [
+                        { nome: 'UNITED STATES DEPARTMENT OF STATE', qualificacao: 'Representante Diplomático' },
+                        { nome: 'EMBASSY OF THE UNITED STATES', qualificacao: 'Missão Diplomática' }
+                    ],
+                    dados_abertos_gov: {
+                        brasil_api: 'https://brasilapi.com.br/api/cnpj/v1/54016822000182',
+                        dados_gov: 'https://dados.gov.br/dataset/cnpj-mais',
+                        brasil_io: 'https://brasil.io/datasets/empresas/cnpj'
+                    },
+                    categorizado: true,
+                    timestamp: new Date().toISOString()
+                };
+                
             default:
                 return { 
                     error: 'Categoria desconhecida',
-                    categoriasDisponiveis: ['infraestrutura', 'redes', 'web', 'documentos', 'fiscal', 'seguranca']
+                    categoriasDisponiveis: ['infraestrutura', 'redes', 'web', 'documentos', 'fiscal', 'seguranca', 'cnpj']
                 };
         }
     } catch (err) {
