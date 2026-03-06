@@ -5,12 +5,12 @@
 
 // Configuration for Netlify Backend
 var CONFIG = {
-    // Netlify site URL (update with your Netlify site name)
-    netlifyUrl: 'https://background-check-pro.netlify.app',
+    // Netlify site URL
+    netlifyUrl: 'https://glittering-sundae-4fba50.netlify.app',
     // GitHub Pages URL
     githubPagesUrl: 'https://quakeweb-repo.github.io/projeto-anti-consulado',
     // API Base URL - Always points to Netlify
-    apiBase: 'https://background-check-pro.netlify.app/.netlify/functions',
+    apiBase: 'https://glittering-sundae-4fba50.netlify.app/.netlify/functions',
     // Environment detection
     isNetlify: window.location.hostname.includes('netlify.app'),
     isGitHubPages: window.location.hostname.includes('github.io'),
@@ -24,7 +24,7 @@ if (CONFIG.isLocalhost) {
     CONFIG.apiBase = '/.netlify/functions';
 } else {
     // GitHub Pages - Always use Netlify API
-    CONFIG.apiBase = 'https://background-check-pro.netlify.app/.netlify/functions';
+    CONFIG.apiBase = 'https://glittering-sundae-4fba50.netlify.app/.netlify/functions';
 }
 
 // Log environment info
