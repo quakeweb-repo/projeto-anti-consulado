@@ -1,7 +1,12 @@
-const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
-const path = require('path');
+import express from 'express';
+import axios from 'axios';
+import { load as cheerioLoad } from 'cheerio';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { searchCnpj, CnpjValidationError } from './src/services/cnpjPublicoService.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,7 +60,7 @@ app.get('/api/scrape/:site', async (req, res) => {
 
     try {
         const response = await axios.get(allowedSites[site]);
-        const $ = cheerio.load(response.data);
+        const $ = cheerioLoad(response.data);
         const text = $('body').text().substring(0, 5000); // Limitar texto
         res.json({ text });
     } catch (error) {
@@ -120,6 +125,48 @@ app.get('/api/analyze/:address', async (req, res) => {
         res.json(analysis);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Endpoint para busca de CNPJ Público com validação LGPD
+app.post('/api/cnpj/search', async (req, res) => {
+    try {
+        const { cnpj, requestId, idDelegado, purpose, approvalId, legalBasis } = req.body;
+
+        if (!cnpj) {
+            return res.status(400).json({
+                error: 'CNPJ é obrigatório',
+                code: 'MISSING_CNPJ'
+            });
+        }
+
+        const result = await searchCnpj({
+            cnpj,
+            requestId: requestId || `req-${Date.now()}`,
+            idDelegado,
+            purpose,
+            approvalId,
+            legalBasis,
+        });
+
+        res.json({
+            success: true,
+            data: result,
+            manifest: result._evidenceManifest,
+        });
+    } catch (error) {
+        if (error instanceof CnpjValidationError) {
+            return res.status(400).json({
+                error: error.message,
+                code: error.code,
+                details: error.details,
+            });
+        }
+
+        res.status(500).json({
+            error: error.message,
+            code: 'INTERNAL_ERROR',
+        });
     }
 });
 
