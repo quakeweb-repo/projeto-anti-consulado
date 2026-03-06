@@ -260,6 +260,42 @@ function showDossie(categoria) {
     if (!dossie) return;
     
     const container = document.getElementById('dossie-container');
+    
+    // Show loading state
+    container.innerHTML = `
+        <div class="section-card">
+            <div class="section-header" style="background: linear-gradient(135deg, #1e3c72 0%, #005b96 100%);">
+                <i class="fas ${dossie.icone}"></i> ${dossie.titulo}
+                <button onclick="hideDossie()" style="float: right; border: none; background: transparent; color: white; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px;">×</button>
+            </div>
+            <div class="p-4">
+                <div style="text-align: center; padding: 30px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #1e3c72; margin-right: 10px;"></i>
+                    <span style="color: #666;">Minerando dados de ${dossie.titulo.split('-')[0].trim()}...</span>
+                </div>
+            </div>
+        </div>
+    `;
+    container.style.display = 'block';
+    window.scrollTo(0, 0);
+    
+    // Fetch live data from backend
+    fetch(`/api/osint/${categoria}`)
+        .then(resp => {
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            return resp.json();
+        })
+        .then(result => {
+            displayDossieData(categoria, dossie, result.data);
+        })
+        .catch(err => {
+            console.error('Erro ao minerar dados:', err);
+            displayDossieError(categoria, dossie, err.message);
+        });
+}
+
+function displayDossieData(categoria, dossie, data) {
+    const container = document.getElementById('dossie-container');
     let html = `
         <div class="section-card">
             <div class="section-header" style="background: linear-gradient(135deg, #1e3c72 0%, #005b96 100%);">
@@ -268,7 +304,14 @@ function showDossie(categoria) {
             </div>
             <div class="p-4">
                 <div style="margin-bottom: 20px;">
-                    <h5 style="color: #1e3c72; margin-bottom: 15px;">📋 Repositórios Primários OSINT BRAZUCA</h5>
+                    <h5 style="color: #1e3c72; margin-bottom: 15px;">📊 Dados Mineados em Tempo Real</h5>
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6;">
+                        <pre style="margin: 0; font-size: 12px; color: #333; font-family: 'Monaco', monospace; white-space: pre-wrap; word-break: break-all;">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h5 style="color: #1e3c72; margin-bottom: 15px;">🔗 Repositórios Primários OSINT BRAZUCA para Análise Detalhada</h5>
                     <div style="margin-top: 15px;">
     `;
     
@@ -294,8 +337,49 @@ function showDossie(categoria) {
     `;
     
     container.innerHTML = html;
-    container.style.display = 'block';
-    window.scrollTo(0, 0);
+}
+
+function displayDossieError(categoria, dossie, errorMsg) {
+    const container = document.getElementById('dossie-container');
+    let html = `
+        <div class="section-card">
+            <div class="section-header" style="background: linear-gradient(135deg, #1e3c72 0%, #005b96 100%);">
+                <i class="fas ${dossie.icone}"></i> ${dossie.titulo}
+                <button onclick="hideDossie()" style="float: right; border: none; background: transparent; color: white; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px;">×</button>
+            </div>
+            <div class="p-4">
+                <div style="background-color: #ffe3e3; border-left: 5px solid #dc3545; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                    <strong style="color: #721c24;">⚠️ Erro ao minerar dados:</strong>
+                    <div style="font-size: 12px; color: #721c24; margin-top: 5px;">${errorMsg}</div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h5 style="color: #1e3c72; margin-bottom: 15px;">🔗 Repositórios Primários OSINT BRAZUCA para Análise Manual</h5>
+                    <div style="margin-top: 15px;">
+    `;
+    
+    dossie.repositorios.forEach((repo, index) => {
+        html += `
+            <div style="margin-bottom: 15px; padding: 15px; border-left: 5px solid #1e3c72; background-color: #f8f9fa; border-radius: 4px;">
+                <div style="margin-bottom: 8px;">
+                    <strong style="color: #1e3c72; font-size: 15px;">${index + 1}. ${repo.titulo}</strong>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 10px;">${repo.descricao}</div>
+                <a href="${repo.link}" target="_blank" style="color: #007bff; text-decoration: none; font-size: 12px; font-weight: 500;">
+                    <i class="fas fa-external-link-alt"></i> Acessar Repositório
+                </a>
+            </div>
+        `;
+    });
+    
+    html += `
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
 }
 
 function hideDossie() {
