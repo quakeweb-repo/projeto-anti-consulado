@@ -483,6 +483,32 @@
         <div id="admin" class="content-area">
             <div class="admin-panel">
                 <div class="admin-section">
+                    <div class="admin-title"><i class="fas fa-lock"></i> Pagamentos</div>
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Email</th>
+                                <th>PIX</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentHistory">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #8892b0;">Nenhum pagamento registrado</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 25px; text-align: center;">
+                        <button class="btn btn-primary" onclick="processPayment()" style="font-size: 1.1rem; padding: 15px 30px;">
+                            <i class="fas fa-credit-card"></i> Processar Pagamento PIX
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-section">
                     <div class="admin-title"><i class="fas fa-users-cog"></i> Gerenciamento</div>
                     <table class="user-table">
                         <thead>
@@ -537,6 +563,9 @@
             revenue: 0,
             currentType: 'person',
             selectedPackage: null,
+            isAdmin: false,
+            adminPassword: 'admin123',
+            pixKey: 'gustavobayeux@gmail.com',
             
             sources: {
                 publicaCnpj: { name: 'publica.cnpj.ws', url: 'https://publica.cnpj.ws/cnpj/{cnpj}' },
@@ -550,10 +579,42 @@
         };
         
         function showTab(tab) {
+            if (tab === 'admin' && !APP.isAdmin) {
+                requestAdminAccess();
+                return;
+            }
             document.querySelectorAll('.content-area').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
             document.getElementById(tab).classList.add('active');
             event.target.classList.add('active');
+        }
+        
+        function requestAdminAccess() {
+            const password = prompt('🔒 Acesso restrito - Digite a senha de administrador:');
+            if (password === APP.adminPassword) {
+                APP.isAdmin = true;
+                showTab('admin');
+                alert('✅ Acesso administrativo concedido!');
+            } else {
+                alert('❌ Senha incorreta! Acesso negado.');
+            }
+        }
+        
+        function processPayment() {
+            const amount = prompt('💰 Valor do pagamento (R$):');
+            const email = prompt('📧 Email para envio dos créditos:');
+            
+            if (amount && email) {
+                alert(`✅ Pagamento processado!\n\nValor: R$ ${amount}\nEmail: ${email}\nPIX: ${APP.pixKey}\n\nCréditos serão adicionados após confirmação.`);
+                
+                const creditsToAdd = Math.floor(amount / 0.5);
+                APP.credits += creditsToAdd;
+                APP.revenue += parseFloat(amount);
+                updateCredits();
+                updateDashboard();
+                
+                addPaymentHistory(amount, email, 'Confirmado');
+            }
         }
         
         function selectPackage(credits, price) {
@@ -786,6 +847,21 @@
                     <td>${query}</td>
                     <td>${cost}</td>
                     <td><span class="status-badge badge-success">${status}</span></td>
+                </tr>
+            `;
+            tbody.innerHTML = row + tbody.innerHTML;
+        }
+        
+        function addPaymentHistory(amount, email, status) {
+            const tbody = document.getElementById('paymentHistory');
+            if (tbody.innerHTML.includes('Nenhum pagamento')) tbody.innerHTML = '';
+            const row = `
+                <tr>
+                    <td>${new Date().toLocaleString('pt-BR')}</td>
+                    <td>R$ ${amount}</td>
+                    <td>${email}</td>
+                    <td>${APP.pixKey}</td>
+                    <td><span class="status-badge ${status === 'Confirmado' ? 'badge-success' : 'badge-warning'}">${status}</span></td>
                 </tr>
             `;
             tbody.innerHTML = row + tbody.innerHTML;
